@@ -1,5 +1,6 @@
 namespace EventDrive.Worker.Host
 {
+    using EventDrive.API.Behavior.Middlewares;
     using Infrastructure;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.Configuration;
@@ -29,6 +30,11 @@ namespace EventDrive.Worker.Host
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            app.UseHttpsRedirection()
+               .UseStaticFiles()
+               .UseRouting()
+               .UseCors("AllowAll")
+               .UseCustomHealthChecks("/health");
         }
     }
 }

@@ -15,9 +15,9 @@
             _persistentConnection = persistentConnection;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            throw new NotImplementedException();
+            await Task.Delay(12);
         }
     }
 }

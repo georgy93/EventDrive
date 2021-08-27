@@ -25,6 +25,8 @@
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _retryCount = retryCount;
+
+            TryConnect();
         }
 
         public bool IsConnected => _connection is { IsOpen: true } && !_disposed;

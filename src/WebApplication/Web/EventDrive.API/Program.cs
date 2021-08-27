@@ -43,7 +43,7 @@ namespace EventDrive.API
             {
                 webBuilder.UseKestrel();
                 //webBuilder.UseUrls("http://*:80", "https://*:443");
-                // webBuilder.UseIISIntegration();
+                webBuilder.UseIISIntegration();
                 webBuilder.UseStartup(Assembly.GetEntryAssembly().FullName);
             })
             .Build();

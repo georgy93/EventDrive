@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  eventdrive.worker.host:
+    image: ${DOCKER_REGISTRY-}eventdriveworkerhost
+    build:
+      context: .
+      dockerfile: Worker/EventDrive.Worker.Host/Dockerfile
+    restart: on-failure
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EventDriveDB;User Id=sa; Password=1234!qwerty;MultipleActiveResultSets=true
+    links:
+      - sqlServer
+      - rabbitMq
+    networks: 
+      - eventDrive-network
+
+  eventdrive.api:
+    image: ${DOCKER_REGISTRY-}eventdriveapi
+    build:
+      context: .
+      dockerfile: WebApplication/Web/EventDrive.API/Dockerfile
+    restart: on-failure
+    links:
+      - rabbitMq
+    networks: 
+      - eventDrive-network
+
+  sqlServer:
+    container_name: sqlServer
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports: 
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=1234!qwerty
+    volumes: 
+      - sqldata:/var/opt/mssql 
+    networks: 
+      - eventDrive-network
+
+  rabbitMq:
+     container_name: rabbitMq
+     image: rabbitmq:3-management
+     ports:
+       - "5672:5672"
+       - "15672:15672"
+     hostname: "rabbitmq"
+     environment:
+       - RABBITMQ_DEFAULT_USER=guest
+       - RABBITMQ_DEFAULT_PASS=guest
+     volumes:
+       - rabbitmq:/var/lib/rabbitmq/mnesia
+     networks: 
+      - eventDrive-network
+
+networks:
+  eventDrive-network:
+
+volumes:
+  sqldata:
+  rabbitmq:
