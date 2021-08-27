@@ -1,0 +1,18 @@
+
+Create 2 applications, use rabbit mq to communicate :
+
+1) Webapi – add two endpoints:
+o AddItemsToRedis – adds list of custom type items to redis stream
+o ItemsAdded – notify worker app through rabbit mq
+
+2) Worker app – when notification for new items is receive, read items from redis stream and insert
+them into MSSql database (use bulk operations)
+
+Use Tye to start webapi and worker apps. https://github.com/dotnet/tye/blob/main/docs/tutorials/hello-tye/00_run_locally.md
+
+Code should compile without errors.
+
+Include readme how to start application and short description of the implementation.
+Create public repo.
+
+Bonus: Inslude unit tests.
