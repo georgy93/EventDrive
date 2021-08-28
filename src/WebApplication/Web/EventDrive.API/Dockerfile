@@ -11,6 +11,7 @@ COPY ["WebApplication/Web/EventDrive.API/EventDrive.API.csproj", "WebApplication
 COPY ["Common/EventDrive.Utils/EventDrive.Utils.csproj", "Common/EventDrive.Utils/"]
 COPY ["WebApplication/Infrastructure/EventDrive.Infrastructure/EventDrive.Infrastructure.csproj", "WebApplication/Infrastructure/EventDrive.Infrastructure/"]
 COPY ["Common/EventDrive.DTOs/EventDrive.DTOs.csproj", "Common/EventDrive.DTOs/"]
+COPY ["Common/EventDrive.RabbitMq/EventDrive.RabbitMq.csproj", "Common/EventDrive.RabbitMq/"]
 RUN dotnet restore "WebApplication/Web/EventDrive.API/EventDrive.API.csproj"
 COPY . .
 WORKDIR "/src/WebApplication/Web/EventDrive.API"

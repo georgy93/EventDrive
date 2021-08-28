@@ -6,12 +6,15 @@ services:
     build:
       context: .
       dockerfile: Worker/EventDrive.Worker.Host/Dockerfile
+    ports:
+      - "5002:80"
     restart: on-failure
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EventDriveDB;User Id=sa; Password=1234!qwerty;MultipleActiveResultSets=true
     links:
       - sqlServer
       - rabbitMq
+      - redis
     networks: 
       - eventDrive-network
 
@@ -20,9 +23,13 @@ services:
     build:
       context: .
       dockerfile: WebApplication/Web/EventDrive.API/Dockerfile
+    ports:
+      - "5000:80"
+      - "5001:443"
     restart: on-failure
     links:
       - rabbitMq
+      - redis
     networks: 
       - eventDrive-network
 
@@ -40,18 +47,33 @@ services:
       - eventDrive-network
 
   rabbitMq:
-     container_name: rabbitMq
-     image: rabbitmq:3-management
-     ports:
-       - "5672:5672"
-       - "15672:15672"
-     hostname: "rabbitmq"
-     environment:
-       - RABBITMQ_DEFAULT_USER=guest
-       - RABBITMQ_DEFAULT_PASS=guest
-     volumes:
-       - rabbitmq:/var/lib/rabbitmq/mnesia
-     networks: 
+    container_name: rabbitMq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    hostname: "rabbitmq"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/mnesia
+    networks: 
+      - eventDrive-network
+
+  redis:
+    container_name: redis
+    image: "redis:alpine"
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - $PWD/redis-data:/var/lib/redis
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    restart: on-failure
+    networks: 
       - eventDrive-network
 
 networks:
@@ -60,3 +82,4 @@ networks:
 volumes:
   sqldata:
   rabbitmq:
+  redis-data:

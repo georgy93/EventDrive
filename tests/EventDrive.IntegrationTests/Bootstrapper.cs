@@ -1,6 +1,7 @@
 ﻿namespace EventDrive.IntegrationTests
 {
     using Common;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Refit;
     using SolidToken.SpecFlow.DependencyInjection;
@@ -13,11 +14,17 @@
         {
             var services = new ServiceCollection();
 
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var apiUrl = configuration.GetSection("EventDriveAPIUrl").Value;
+
             services
               .AddRefitClient<IEventDriveAPIClient>(new RefitSettings())
               .ConfigureHttpClient(client =>
               {
-                  client.BaseAddress = new Uri("https://www.githudb.com"); // TODO: Change to actual url
+                  client.BaseAddress = new Uri(apiUrl);
                   client.Timeout = TimeSpan.FromSeconds(3);
               });
 

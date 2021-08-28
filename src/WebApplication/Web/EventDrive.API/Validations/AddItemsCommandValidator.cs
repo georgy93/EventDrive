@@ -23,7 +23,11 @@
             {
                 RuleFor(e => e.Id)
                     .NotEmpty()
-                    .WithMessage("the list of items contains invalid ID"); ;
+                    .WithMessage("the list of items contains invalid ID");
+
+                RuleFor(e => e.Name)
+                    .NotEmpty()
+                    .WithMessage("the list of items contains invalid name");
             }
         }
     }

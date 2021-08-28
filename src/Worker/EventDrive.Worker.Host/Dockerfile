@@ -7,9 +7,12 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
 COPY ["Worker/EventDrive.Worker.Host/EventDrive.Worker.Host.csproj", "Worker/EventDrive.Worker.Host/"]
+COPY ["WebApplication/Web/EventDrive.API/EventDrive.API.csproj", "WebApplication/Web/EventDrive.API/"]
 COPY ["Common/EventDrive.Utils/EventDrive.Utils.csproj", "Common/EventDrive.Utils/"]
-COPY ["Worker/EventDrive.Worker.Infrastructure/EventDrive.Worker.Infrastructure.csproj", "Worker/EventDrive.Worker.Infrastructure/"]
+COPY ["WebApplication/Infrastructure/EventDrive.Infrastructure/EventDrive.Infrastructure.csproj", "WebApplication/Infrastructure/EventDrive.Infrastructure/"]
+COPY ["Common/EventDrive.DTOs/EventDrive.DTOs.csproj", "Common/EventDrive.DTOs/"]
 COPY ["Common/EventDrive.RabbitMq/EventDrive.RabbitMq.csproj", "Common/EventDrive.RabbitMq/"]
+COPY ["Worker/EventDrive.Worker.Infrastructure/EventDrive.Worker.Infrastructure.csproj", "Worker/EventDrive.Worker.Infrastructure/"]
 RUN dotnet restore "Worker/EventDrive.Worker.Host/EventDrive.Worker.Host.csproj"
 COPY . .
 WORKDIR "/src/Worker/EventDrive.Worker.Host"

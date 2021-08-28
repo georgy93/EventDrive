@@ -4,18 +4,25 @@
     using DTOs.Commands;
     using Swashbuckle.AspNetCore.Filters;
     using System;
-    using System.Collections.Generic;
+    using System.Linq;
 
     public class AddItemsCommandExample : IExamplesProvider<AddItemsCommand>
     {
         public AddItemsCommand GetExamples() => new()
         {
-            Items = new List<MyDTO>()
+            Items = Enumerable
+            .Range(0, 3)
+            .ToList()
+            .Select(x =>
             {
-                new() { Id = Guid.NewGuid().ToString() },
-                new() { Id = Guid.NewGuid().ToString() },
-                new() { Id = Guid.NewGuid().ToString() }
-            }
+                var guid = Guid.NewGuid().ToString();
+
+                return new MyDTO
+                {
+                    Id = guid,
+                    Name = guid + "lala"
+                };
+            }).ToList()
         };
     }
 }

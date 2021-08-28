@@ -7,7 +7,6 @@
 
     public interface IEventDriveAPIClient
     {
-        //[Get("/someController/someEndpoint")]
         [Post("/items/addItemsToRedis")]
         Task AddItemsToRedisAsync([Body] AddItemsCommand addItemsCommand, CancellationToken cancellationToken = default);
 

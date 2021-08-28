@@ -27,12 +27,19 @@
         [Given(@"I have a list of items")]
         public void GivenIHaveAListOfItems()
         {
-            _listOfDtos = new List<MyDTO>()
+            _listOfDtos = Enumerable
+            .Range(0, 3)
+            .ToList()
+            .Select(x =>
             {
-                new() { Id = Guid.NewGuid().ToString() },
-                new() { Id = Guid.NewGuid().ToString() },
-                new() { Id = Guid.NewGuid().ToString() }
-            };
+                var guid = Guid.NewGuid().ToString();
+
+                return new MyDTO
+                {
+                    Id = guid,
+                    Name = guid + "lala"
+                };
+            }).ToList();
         }
 
         [Given(@"I sent them to the web API")]

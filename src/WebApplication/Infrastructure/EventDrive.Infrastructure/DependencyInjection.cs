@@ -1,26 +1,35 @@
 ﻿namespace EventDrive.Infrastructure
 {
-    using EventDrive.RabbitMq;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using RabbitMq;
     using Services;
     using StackExchange.Redis;
 
     public static class DependencyInjection
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) => services
-            .AddRedisCache(configuration)
-            .AddRabbitMq(configuration)
+            .AddRedis(configuration)
+            .AddRabbitMqMessaging(configuration)
             .AddServices();
 
-        private static IServiceCollection AddRedisCache(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
         {
-           return services.AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect("10.0.75.1"));
-        }
+            var redisHost = configuration.GetSection("RedisSettings:Host").Value;
+            var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
 
-        private static IServiceCollection AddRabbitMq(this IServiceCollection services, IConfiguration configuration)
-        {
-            return services.AddRabbitMqMessaging(configuration);
+            services
+                .AddHealthChecks()
+                .AddRedis(redisHost, "redis");
+
+            var connectionOpts = new ConfigurationOptions
+            {
+                AbortOnConnectFail = redisReconnectStrategy,
+                EndPoints = { redisHost }
+            };
+
+            return services
+                .AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect(connectionOpts));
         }
 
         private static IServiceCollection AddServices(this IServiceCollection services) => services

@@ -31,9 +31,6 @@ namespace EventDrive.Worker.Host
         public void Configure(IApplicationBuilder app)
         {
             app.UseHttpsRedirection()
-               .UseStaticFiles()
-               .UseRouting()
-               .UseCors("AllowAll")
                .UseCustomHealthChecks("/health");
         }
     }

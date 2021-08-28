@@ -5,16 +5,18 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "80"
+      - "5002:80"
 
   eventdrive.api:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development      
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=password!1234
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development 
       - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password!1234
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx      
     ports:
-      - "80"
-      - "443"
+      - "5000:80"
+      - "5001:443"
     volumes:
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+       #- ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+       #- ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+       - ~/.aspnet/https:/https:ro
