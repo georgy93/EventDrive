@@ -1,7 +1,7 @@
 ﻿namespace EventDrive.API.Validations
 {
+    using DTOs;
     using DTOs.Commands;
-    using EventDrive.DTOs;
     using FluentValidation;
 
     public class AddItemsCommandValidator : BaseValidator<AddItemsCommand>

@@ -1,16 +1,14 @@
 ﻿namespace EventDrive.IntegrationTests.Steps
 {
+    using Common;
+    using DTOs;
     using DTOs.Commands;
-    using EventDrive.DTOs;
-    using EventDrive.IntegrationTests.Common;
     using FluentAssertions;
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using TechTalk.SpecFlow;
-    using Xunit;
 
     [Binding]
     public sealed class IntegrationStepDefinitions

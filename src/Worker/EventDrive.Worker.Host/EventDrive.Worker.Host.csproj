@@ -14,9 +14,13 @@
 	  <PackageReference Include="Serilog.Extensions.Hosting" Version="4.1.2" />
 	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="5.0.2" />
 	  <PackageReference Include="StackExchange.Redis" Version="2.2.50" />
+	  <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+	  <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+	  <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\EventDrive.DTOs\EventDrive.DTOs.csproj" />
     <ProjectReference Include="..\..\Common\EventDrive.RabbitMq\EventDrive.RabbitMq.csproj" />
     <ProjectReference Include="..\..\Common\EventDrive.Utils\EventDrive.Utils.csproj" />
   </ItemGroup>

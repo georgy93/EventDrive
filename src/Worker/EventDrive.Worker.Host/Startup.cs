@@ -1,5 +1,6 @@
 namespace EventDrive.Worker.Host
 {
+    using EventDrive.Worker.Host.Dataflow;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,9 @@ namespace EventDrive.Worker.Host
                 .AddCheck<LocalHealthCheck>("local-hc");
 
             services
-                .AddHostedService<RabbitMqConsumerBackgroundService>()
+                .AddHostedService<ItemsConsumerBackgroundService>()
+                .AddSingleton<ReadStreamBlock>()
+                .AddSingleton<PersistenceBlock>()
                 .AddInfrastructure(Configuration); // normally the infrastructure layer would be another class library
         }
 

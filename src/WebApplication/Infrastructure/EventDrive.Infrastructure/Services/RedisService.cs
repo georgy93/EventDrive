@@ -1,6 +1,6 @@
 ﻿namespace EventDrive.Infrastructure.Services
 {
-    using EventDrive.DTOs;
+    using DTOs;
     using StackExchange.Redis;
     using System;
     using System.Collections.Generic;
