@@ -1,7 +1,5 @@
 namespace EventDrive.Worker.Host
 {
-    using EventDrive.API.Behavior.Middlewares;
-    using Infrastructure;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +22,8 @@ namespace EventDrive.Worker.Host
                 .AddCheck<LocalHealthCheck>("local-hc");
 
             services
-                .AddInfrastructure(Configuration);
+                .AddHostedService<RabbitMqConsumerBackgroundService>()
+                .AddInfrastructure(Configuration); // normally the infrastructure layer would be another class library
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

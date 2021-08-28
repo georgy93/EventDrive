@@ -7,12 +7,12 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public interface IRedisService
+    public interface IEventStreamService
     {
         Task WriteToStreamAsync(IEnumerable<MyDTO> myDTOs);
     }
 
-    public class RedisService : IRedisService
+    internal class RedisService : IEventStreamService
     {
         private readonly IConnectionMultiplexer _connectionMultiplexer;
 
@@ -39,8 +39,7 @@
 
             var info = redisDb.StreamInfo("itemsLog");
 
-
-            redisDb.StreamRead("itemsLog", info.LastEntry.Id)
+            redisDb.StreamRead("itemsLog", info.LastEntry.Id);
 
             Console.WriteLine(info.Length);
             Console.WriteLine(info.FirstEntry.Id);

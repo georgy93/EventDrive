@@ -1,6 +1,8 @@
 ﻿namespace EventDrive.API.Controllers
 {
+    using Common;
     using DTOs.Commands;
+    using DTOs.IntegrationEvents;
     using Infrastructure.Services;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -9,15 +11,16 @@
     [Route("items")]
     public class ItemsController : BaseController
     {
-        private readonly IRedisService _redisService;
+        private readonly IEventStreamService _redisService;
 
-        public ItemsController(IRedisService redisService)
+        public ItemsController(IEventStreamService redisService)
         {
             _redisService = redisService;
         }
 
         [HttpPost("addItemsToRedis")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task AddItemsToRedisAsync(AddItemsCommand addItemsCommand)
         {
             await _redisService.WriteToStreamAsync(addItemsCommand.Items);
@@ -25,9 +28,11 @@
 
         [HttpPost("itemsAdded")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-        public async Task NotifyItemsAddedAsync()
+        public Task NotifyItemsAddedAsync([FromServices] IntegrationEventPublisherService integrationEventPublisherService)
         {
-            await Task.Delay(100);
+            integrationEventPublisherService.Publish(new ItemsAddedToRedisIntegrationEvent());
+
+            return Task.CompletedTask;
         }
     }
 }

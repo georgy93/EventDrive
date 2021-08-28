@@ -1,4 +1,4 @@
-﻿namespace EventDrive.API.Behavior.Middlewares
+﻿namespace EventDrive.Utils.Health
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;

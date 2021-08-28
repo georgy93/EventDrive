@@ -1,17 +1,15 @@
-﻿namespace EventDrive.Worker.Infrastructure
+﻿namespace EventDrive.Worker.Host
 {
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using RabbitMq;
-    using Services.Background;
     using StackExchange.Redis;
 
     public static class DependencyInjection
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) => services
             .AddRedis(configuration)
-            .AddRabbitMqMessaging(configuration)
-            .AddBackgroundServices();
+            .AddRabbitMqMessaging(configuration);
 
         private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
         {
@@ -30,9 +28,6 @@
 
             return services
                 .AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect(connectionOpts));
-        }
-
-        private static IServiceCollection AddBackgroundServices(this IServiceCollection services) => services
-             .AddHostedService<RabbitMqConsumerBackgroundService>();
+        }            
     }
 }

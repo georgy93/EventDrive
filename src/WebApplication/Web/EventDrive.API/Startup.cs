@@ -8,6 +8,7 @@ namespace EventDrive.API
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Swagger;
+    using Utils.Health;
 
     public class Startup
     {

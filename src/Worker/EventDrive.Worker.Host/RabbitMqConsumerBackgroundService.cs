@@ -1,4 +1,4 @@
-﻿namespace EventDrive.Worker.Infrastructure.Services.Background
+﻿namespace EventDrive.Worker.Host
 {
     using Microsoft.Extensions.Hosting;
     using RabbitMq.Abstract;

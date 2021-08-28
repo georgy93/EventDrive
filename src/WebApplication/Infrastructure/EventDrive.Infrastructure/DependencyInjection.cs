@@ -33,6 +33,7 @@
         }
 
         private static IServiceCollection AddServices(this IServiceCollection services) => services
-            .AddSingleton<IRedisService, RedisService>();
+            .AddSingleton<IEventStreamService, RedisService>()
+            .AddSingleton<IntegrationEventPublisherService>();
     }
 }
