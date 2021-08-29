@@ -1,9 +1,9 @@
 USE [master]
 GO
 
-IF DB_ID('EventDriveDB') IS NOT NULL
-  set noexec on               -- prevent creation when already exists
-
+DROP Database IF EXISTS EventDriveDB
+-- IF DB_ID('EventDriveDB') IS NOT NULL
+  -- set noexec on               -- prevent creation when already exists
 
 CREATE DATABASE [EventDriveDB];
 GO
@@ -15,10 +15,11 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [dbo].[Items](
-    [Id] [UNIQUEIDENTIFIER] DEFAULT NEWID() PRIMARY KEY NOT NULL,
-	[Name] [varchar](MAX) NOT NULL
-)
+CREATE TABLE [dbo].[Items]
+(
+	[Id] [int] identity(1,1) NOT NULL, [ItemId] [nvarchar] (MAX) NOT NULL, [ItemName] [nvarchar] (MAX) NOT NULL,
+	CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED ( [ID] ASC )
+);
 GO
 
 CREATE LOGIN [user] WITH PASSWORD = 'simplePWD123!'

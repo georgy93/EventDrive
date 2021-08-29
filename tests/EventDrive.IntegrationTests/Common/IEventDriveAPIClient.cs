@@ -7,10 +7,10 @@
 
     public interface IEventDriveAPIClient
     {
-        [Post("/items/addItemsToRedis")]
+        [Post("/api/items/addItemsToRedis")]
         Task AddItemsToRedisAsync([Body] AddItemsCommand addItemsCommand, CancellationToken cancellationToken = default);
 
-        [Post("/items/itemsAdded")]
+        [Post("/api/items/itemsAdded")]
         Task NotifyItemsAddedAsync(CancellationToken cancellationToken = default);
     }
 }

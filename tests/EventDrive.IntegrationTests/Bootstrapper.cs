@@ -25,7 +25,7 @@
               .ConfigureHttpClient(client =>
               {
                   client.BaseAddress = new Uri(apiUrl);
-                  client.Timeout = TimeSpan.FromSeconds(3);
+                  client.Timeout = TimeSpan.FromSeconds(10);
               });
 
             return services;

@@ -8,7 +8,7 @@
     using Microsoft.AspNetCore.Mvc;
     using System.Threading.Tasks;
 
-    [Route("items")]
+    [Route("api/items")]
     public class ItemsController : BaseController
     {
         private readonly IEventStreamService _eventStreamService;

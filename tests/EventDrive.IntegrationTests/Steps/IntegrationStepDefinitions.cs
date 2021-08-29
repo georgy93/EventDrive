@@ -48,7 +48,7 @@
         }
 
         [When(@"a request for synchronization event is sent")]
-         public async Task WhenARequestForSynchronizationEventIsSent()
+        public async Task WhenARequestForSynchronizationEventIsSent()
         {
             await _eventDriveAPI.NotifyItemsAddedAsync();
         }
@@ -61,12 +61,12 @@
             var actualResult = new List<string>();
 
             // Act
-            using var connection = new SqlConnection("Server=mssql;Database=EventDriveDB;User Id=sa; Password=1234!Qwerty;MultipleActiveResultSets=true"); // move to appsettings
+            using var connection = new SqlConnection("Data Source=mssql;Initial Catalog=EventDriveDB;User ID=user;Password=simplePWD123!"); // move to appsettings
 
             await connection.OpenAsync();
 
             var idsFilter = string.Join(',', expectedResult);
-            var sql = $"SELECT * FROM  dbo.Items WHERE ID IN ({idsFilter})";
+            var sql = $"SELECT ItemId FROM  dbo.Items WHERE ID IN ({idsFilter})"; // maybe it is wrong query
 
             var command = new SqlCommand(sql, connection);
 
@@ -76,7 +76,7 @@
             {
                 while (reader.Read())
                 {
-                    actualResult.Add(reader["Id"].ToString());
+                    actualResult.Add(reader["ItemId"].ToString());
                 }
             }
 

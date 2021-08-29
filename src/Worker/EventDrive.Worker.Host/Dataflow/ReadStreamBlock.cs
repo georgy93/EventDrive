@@ -1,6 +1,7 @@
 ﻿namespace EventDrive.Worker.Host.Dataflow
 {
     using DTOs;
+    using Microsoft.Extensions.Logging;
     using StackExchange.Redis;
     using System;
     using System.Collections.Generic;
@@ -9,14 +10,16 @@
 
     public class ReadStreamBlock
     {
+        private readonly ILogger<ReadStreamBlock> _logger;
         private readonly IConnectionMultiplexer _connectionMultiplexer;
 
         private readonly string _consumerGroupId;
         private readonly string _consumerName;
         private readonly string _logName;
 
-        public ReadStreamBlock(IConnectionMultiplexer connectionMultiplexer)
+        public ReadStreamBlock(ILogger<ReadStreamBlock> logger, IConnectionMultiplexer connectionMultiplexer)
         {
+            _logger = logger;
             _connectionMultiplexer = connectionMultiplexer;
             _consumerGroupId = "events_consumer_group-" + Guid.NewGuid();
             _consumerName = $"consumer-{_consumerGroupId}";
@@ -33,29 +36,27 @@
             try
             {
                 var redisDb = _connectionMultiplexer.GetDatabase();
-
-                var info = redisDb.StreamGroupInfo(_logName);
-                //var alo = redisDb.delete("itemsLog", info.LastEntry.Id);
-
                 var streamEntries = redisDb.StreamReadGroup(_logName, _consumerGroupId, _consumerName, ">");
 
-                //  var streamEntries = await redisDb.StreamReadAsync("itemsLog", "0-0");
-                var result = streamEntries.Select(entry =>
-                {
-                    redisDb.StreamAcknowledge(_logName, _consumerGroupId, entry.Id);
+                var result = new List<MyDTO>();
 
-                    return new MyDTO
+                foreach (var entry in streamEntries)
+                {
+                    result.Add(new MyDTO
                     {
-                        Id = entry.Values.GetValue(0).ToString(),
-                        Name = entry.Values.GetValue(1).ToString()
-                    };
-                });
+                        Id = entry["id"],
+                        Name = entry["name"]
+                    });
+
+                    redisDb.StreamAcknowledge(_logName, _consumerGroupId, entry.Id);
+                }
 
                 return result;
             }
 
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occured");
                 return Enumerable.Empty<MyDTO>();
             }
         }

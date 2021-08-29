@@ -2,6 +2,7 @@
 {
     using DTOs;
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Generic;
     using System.Data;
@@ -12,10 +13,12 @@
 
     public class PersistenceBlock
     {
+        private readonly ILogger<PersistenceBlock> _logger;
         private readonly IConfiguration _configuration;
 
-        public PersistenceBlock(IConfiguration configuration)
+        public PersistenceBlock(ILogger<PersistenceBlock> logger, IConfiguration configuration)
         {
+            _logger = logger;
             _configuration = configuration;
         }
 
@@ -23,44 +26,41 @@
 
         private async Task PersistBatchToDatabaseAsync(IEnumerable<MyDTO> items)
         {
-            var itemsList = items.ToList();
-
-            if (!itemsList.Any())
-                return;
-
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
-            using var sqlConnection = new SqlConnection(connectionString);
-
-            var dataTable = CreateDataTableFromItems(itemsList);
-
-            await sqlConnection.OpenAsync();
-            var transaction = sqlConnection.BeginTransaction();
-
-            using var bulkCopy = new SqlBulkCopy(sqlConnection, SqlBulkCopyOptions.KeepIdentity, transaction)
-            {
-                BulkCopyTimeout = 20
-            };
-
-            bulkCopy.DestinationTableName = "[Items]";
-            bulkCopy.ColumnMappings.Add("Id", "Id");
-            bulkCopy.ColumnMappings.Add("Name", "Name");
-
             try
             {
-                await bulkCopy.WriteToServerAsync(dataTable);
-                transaction.Commit();
+                var itemsList = items.ToList();
+                if (!itemsList.Any())
+                    return;
+
+                using var sqlConnection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+
+                var dataTable = CreateDataTableFromItems(itemsList);
+
+                await sqlConnection.OpenAsync();
+                await BulkInsertAsync(sqlConnection, dataTable);
+
+                // test code to ensure items were inserted
+                var command = new SqlCommand("SELECT * FROM dbo.Items", sqlConnection);
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var r = $"{reader["Id"]}, {reader["ItemId"]}, {reader["ItemName"]}";
+                }
+                // end of test code
+
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An Error Occured");
             }
         }
 
         private static DataTable CreateDataTableFromItems(IEnumerable<MyDTO> items)
         {
             var table = new DataTable();
-            table.Columns.Add(new DataColumn("Id", typeof(Guid)));
-            table.Columns.Add(new DataColumn("Name", typeof(string)));
+            table.Columns.Add(new DataColumn("ItemId", typeof(string)));
+            table.Columns.Add(new DataColumn("ItemName", typeof(string)));
 
             foreach (var item in items)
             {
@@ -68,6 +68,20 @@
             }
 
             return table;
+        }
+
+        private static async Task BulkInsertAsync(SqlConnection sqlConnection, DataTable dataTable)
+        {
+            using var bulkCopy = new SqlBulkCopy(sqlConnection)
+            {
+                BulkCopyTimeout = 20
+            };
+
+            bulkCopy.DestinationTableName = "[dbo].[Items]";
+            bulkCopy.ColumnMappings.Add("ItemId", "ItemId");
+            bulkCopy.ColumnMappings.Add("ItemName", "ItemName");
+
+            await bulkCopy.WriteToServerAsync(dataTable);
         }
     }
 }
