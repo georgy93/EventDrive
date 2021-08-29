@@ -11,19 +11,21 @@
     [Route("items")]
     public class ItemsController : BaseController
     {
-        private readonly IEventStreamService _redisService;
+        private readonly IEventStreamService _eventStreamService;
 
-        public ItemsController(IEventStreamService redisService)
+        public ItemsController(IEventStreamService eventStreamService)
         {
-            _redisService = redisService;
+            _eventStreamService = eventStreamService;
         }
 
         [HttpPost("addItemsToRedis")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        public async Task AddItemsToRedisAsync(AddItemsCommand addItemsCommand)
+        public Task AddItemsToRedisAsync(AddItemsCommand addItemsCommand)
         {
-            await _redisService.WriteToStreamAsync(addItemsCommand.Items);
+            _eventStreamService.WriteToStream(addItemsCommand.Items);
+
+            return Task.CompletedTask;
         }
 
         [HttpPost("itemsAdded")]

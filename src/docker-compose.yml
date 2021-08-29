@@ -1,5 +1,7 @@
 version: '3.8'
 
+#https://github.com/lkurzyniec/netcore-boilerplate init db example
+
 services:
   eventdrive.worker.host:
     image: ${DOCKER_REGISTRY-}eventdriveworkerhost
@@ -9,10 +11,12 @@ services:
     ports:
       - "5002:80"
     restart: on-failure
-    environment:
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EventDriveDB;User Id=sa; Password=1234!qwerty;MultipleActiveResultSets=true
+    #environment:
+    #  - ConnectionStrings__DefaultConnection=Server=mssql;Database=EventDriveDB;User Id=user; Password=simplePWD123!;MultipleActiveResultSets=true
+    depends_on:
+      - mssql
     links:
-      - sqlServer
+      - mssql
       - rabbitMq
       - redis
     networks: 
@@ -33,16 +37,20 @@ services:
     networks: 
       - eventDrive-network
 
-  sqlServer:
-    container_name: sqlServer
-    image: mcr.microsoft.com/mssql/server:2019-latest
+  mssql:
+    container_name: mssql
+    image: mcr.microsoft.com/mssql/server:2019-latest    
+    command: /bin/bash ./entrypoint.sh    
     ports: 
       - "1433:1433"
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=1234!qwerty
+      - SA_PASSWORD=1234!Qwerty
     volumes: 
-      - sqldata:/var/opt/mssql 
+      - sqldata:/var/opt/mssql/data
+      - ./db/mssql/docker-entrypoint.sh:/entrypoint.sh
+      - ./db/mssql/docker-db-init.sh:/db-init.sh      
+      - ./db/mssql/mssql-items.sql:/db-init.sql
     networks: 
       - eventDrive-network
 

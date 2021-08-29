@@ -9,7 +9,9 @@
             UserName = rabbitMqSettings.UserName,
             Password = rabbitMqSettings.Password,
             HostName = rabbitMqSettings.HostName,
-            ClientProvidedName = rabbitMqSettings.ClientProvidedConnectionName
+            ClientProvidedName = rabbitMqSettings.ClientProvidedConnectionName,
+            DispatchConsumersAsync = true,
+            AutomaticRecoveryEnabled = true
         };
     }
 }

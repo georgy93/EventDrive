@@ -2,8 +2,10 @@
 {
     using Dataflow;
     using DTOs;
+    using DTOs.IntegrationEvents;
     using Microsoft.Extensions.Hosting;
     using RabbitMq.Abstract;
+    using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
     using System.Collections.Generic;
     using System.Threading;
@@ -12,6 +14,8 @@
 
     internal class ItemsConsumerBackgroundService : BackgroundService
     {
+        const string BROKER_NAME = "integrationEvents";
+
         private readonly IRabbitMQPersistentConnection _persistentConnection;
         private readonly TransformBlock<int, IEnumerable<MyDTO>> _entryJob;
 
@@ -19,25 +23,45 @@
         {
             _persistentConnection = persistentConnection;
 
-            var readStreamJob = readStreamBlock.Build(null);
-            var persistenceJob = persistenceBlock.Build(null);
+            var readStreamJob = readStreamBlock.Build(new ExecutionDataflowBlockOptions
+            {
+                BoundedCapacity = 30,
+                MaxDegreeOfParallelism = 1,
+                EnsureOrdered = true
+            });
+
+            var persistenceJob = persistenceBlock.Build(new ExecutionDataflowBlockOptions
+            {
+                BoundedCapacity = 10,
+                MaxDegreeOfParallelism = 1,
+                EnsureOrdered = true
+            });
 
             readStreamJob.LinkTo(persistenceJob, new DataflowLinkOptions { PropagateCompletion = true });
 
             _entryJob = readStreamJob;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // start a consumer 
             var channel = _persistentConnection.CreateChannel();
 
-            channel.QueueDeclare("items", true, false, false, null);
+            channel.ExchangeDeclare(BROKER_NAME, "direct");
+
+            var queueName = channel.QueueDeclare();
+            channel.QueueBind(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name);
 
             var consumer = new AsyncEventingBasicConsumer(channel);
+            channel.BasicConsume(queueName, true, consumer);
 
-            consumer.Received += (obj, ea) => _entryJob.SendAsync(1, stoppingToken);
-           // channel.BasicConsume("items", true, consumer, false, false);
+            consumer.Received += (obj, ea) =>
+            {
+                return _entryJob.SendAsync(1, stoppingToken);
+            };
+            // channel.BasicConsume("items", true, consumer, false, false);
+
+            return Task.CompletedTask;
         }
     }
 }

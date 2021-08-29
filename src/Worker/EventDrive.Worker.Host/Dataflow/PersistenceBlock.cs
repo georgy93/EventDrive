@@ -1,8 +1,9 @@
 ﻿namespace EventDrive.Worker.Host.Dataflow
 {
     using DTOs;
+    using Microsoft.Extensions.Configuration;
+    using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Data;
     using System.Data.SqlClient;
     using System.Linq;
@@ -11,7 +12,12 @@
 
     public class PersistenceBlock
     {
-        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+        private readonly IConfiguration _configuration;
+
+        public PersistenceBlock(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         public ActionBlock<IEnumerable<MyDTO>> Build(ExecutionDataflowBlockOptions options) => new(x => PersistBatchToDatabaseAsync(x), options);
 
@@ -22,37 +28,46 @@
             if (!itemsList.Any())
                 return;
 
-            using var sqlConnection = new SqlConnection(_connectionString);
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using var sqlConnection = new SqlConnection(connectionString);
 
             var dataTable = CreateDataTableFromItems(itemsList);
 
             await sqlConnection.OpenAsync();
+            var transaction = sqlConnection.BeginTransaction();
 
-            using var bulkCopy = new SqlBulkCopy(sqlConnection)
+            using var bulkCopy = new SqlBulkCopy(sqlConnection, SqlBulkCopyOptions.KeepIdentity, transaction)
             {
                 BulkCopyTimeout = 20
             };
 
-            // the following 3 lines might not be neccessary
-            bulkCopy.DestinationTableName = "Items";
-            bulkCopy.ColumnMappings.Add(nameof(MyDTO.Id), "Id");
-            bulkCopy.ColumnMappings.Add(nameof(MyDTO.Name), "Name");
+            bulkCopy.DestinationTableName = "[Items]";
+            bulkCopy.ColumnMappings.Add("Id", "Id");
+            bulkCopy.ColumnMappings.Add("Name", "Name");
 
-            await bulkCopy.WriteToServerAsync(dataTable);
+            try
+            {
+                await bulkCopy.WriteToServerAsync(dataTable);
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+            }
         }
 
         private static DataTable CreateDataTableFromItems(IEnumerable<MyDTO> items)
         {
-            var dataTable = new DataTable();
-            dataTable.Columns.Add(new DataColumn("Id", typeof(string)));
-            dataTable.Columns.Add(new DataColumn("Name", typeof(string)));
+            var table = new DataTable();
+            table.Columns.Add(new DataColumn("Id", typeof(Guid)));
+            table.Columns.Add(new DataColumn("Name", typeof(string)));
 
             foreach (var item in items)
             {
-                dataTable.Rows.Add(new string[] { item.Id, item.Name });
+                table.Rows.Add(item.Id, item.Name);
             }
 
-            return dataTable;
+            return table;
         }
     }
 }

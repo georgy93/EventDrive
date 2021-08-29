@@ -9,7 +9,7 @@
 
     public interface IEventStreamService
     {
-        Task WriteToStreamAsync(IEnumerable<MyDTO> myDTOs);
+        void WriteToStream(IEnumerable<MyDTO> myDTOs);
     }
 
     internal class RedisService : IEventStreamService
@@ -21,7 +21,7 @@
             _connectionMultiplexer = connectionMultiplexer;
         }
 
-        public async Task WriteToStreamAsync(IEnumerable<MyDTO> myDTOs)
+        public void WriteToStream(IEnumerable<MyDTO> myDTOs)
         {
             var redisDb = _connectionMultiplexer.GetDatabase();
 
@@ -33,17 +33,6 @@
                 })
                 .ToList()
                 .ForEach(entry => redisDb.StreamAdd("itemsLog", entry));
-
-
-            var m2 = await redisDb.StreamReadAsync("itemsLog", "0-0");
-
-            var info = redisDb.StreamInfo("itemsLog");
-
-            redisDb.StreamRead("itemsLog", info.LastEntry.Id);
-
-            Console.WriteLine(info.Length);
-            Console.WriteLine(info.FirstEntry.Id);
-            Console.WriteLine(info.LastEntry.Id);
         }
     }
 }

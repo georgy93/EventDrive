@@ -6,6 +6,7 @@
     using FluentAssertions;
     using System;
     using System.Collections.Generic;
+    using System.Data.SqlClient;
     using System.Linq;
     using System.Threading.Tasks;
     using TechTalk.SpecFlow;
@@ -47,18 +48,37 @@
         }
 
         [When(@"a request for synchronization event is sent")]
-        public async Task WhenARequestForSynchronizationEventIsSent()
+         public async Task WhenARequestForSynchronizationEventIsSent()
         {
             await _eventDriveAPI.NotifyItemsAddedAsync();
         }
 
         [Then(@"the items should be found in the data store")]
-        public void ThenTheItemsShouldBeFoundInTheDataStore()
+        public async Task ThenTheItemsShouldBeFoundInTheDataStore()
         {
             // Arrange
             var expectedResult = _listOfDtos.Select(x => x.Id).ToList();
             var actualResult = new List<string>();
-            // call db and get result
+
+            // Act
+            using var connection = new SqlConnection("Server=mssql;Database=EventDriveDB;User Id=sa; Password=1234!Qwerty;MultipleActiveResultSets=true"); // move to appsettings
+
+            await connection.OpenAsync();
+
+            var idsFilter = string.Join(',', expectedResult);
+            var sql = $"SELECT * FROM  dbo.Items WHERE ID IN ({idsFilter})";
+
+            var command = new SqlCommand(sql, connection);
+
+            var reader = await command.ExecuteReaderAsync();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    actualResult.Add(reader["Id"].ToString());
+                }
+            }
 
             // Assert
             actualResult.Should().BeEquivalentTo(expectedResult);
