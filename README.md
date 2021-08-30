@@ -37,7 +37,7 @@ In order to run the tests follow the bellow steps:
 2. Wait until the browser opens a new window so that we know the application is running
 3. From Visual Studio go to Debug menu and choose ```Detach All``` so that we stop the debugger but keep the containers up and running
 4. Go to Test menu and choose ```Test Explorer```
-5. Run All tests
+5. Select the EventDrive.IntegrationTests dropdown and click Run
 
 ![image](https://user-images.githubusercontent.com/51854143/131394548-b2413eac-3176-40ad-a453-0cbe55bf52e9.png)
 
