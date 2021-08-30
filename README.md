@@ -19,6 +19,9 @@ At https://localhost:5001/health we can check the heealth of the Web API
 At https://localhost:5001/swagger/index.html is the swagger of the API  
 
 ## Testing the application
+
+The tests are built with the Specflow testing framework.  
+In order to run the tests follow the bellow steps:  
 1. Run the application with ```Docker Compose``` option in Visual Studio
 2. Wait until the browser opens a new window so that we know the application is running
 3. From Visual Studio go to Debug menu and choose ```Detach All``` so that we stop the debugger but keep the containers up and running
