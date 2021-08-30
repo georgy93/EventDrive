@@ -35,3 +35,6 @@ In order to run the tests follow the bellow steps:
 3. From Visual Studio go to Debug menu and choose ```Detach All``` so that we stop the debugger but keep the containers up and running
 4. Go to Test menu and choose ```Test Explorer```
 5. Run All tests
+
+![image](https://user-images.githubusercontent.com/51854143/131392975-3ab353e9-95c5-4bd2-9d01-bfe6783593d7.png)
+
