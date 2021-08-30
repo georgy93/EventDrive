@@ -39,5 +39,5 @@ In order to run the tests follow the bellow steps:
 4. Go to Test menu and choose ```Test Explorer```
 5. Run All tests
 
-![image](https://user-images.githubusercontent.com/51854143/131392975-3ab353e9-95c5-4bd2-9d01-bfe6783593d7.png)
+![image](https://user-images.githubusercontent.com/51854143/131394548-b2413eac-3176-40ad-a453-0cbe55bf52e9.png)
 
