@@ -34,6 +34,6 @@
 
         private static IServiceCollection AddServices(this IServiceCollection services) => services
             .AddSingleton<IEventStreamService, RedisService>()
-            .AddSingleton<IntegrationEventPublisherService>();
+            .AddSingleton<IIntegrationEventPublisherService, IntegrationEventPublisherService>();
     }
 }

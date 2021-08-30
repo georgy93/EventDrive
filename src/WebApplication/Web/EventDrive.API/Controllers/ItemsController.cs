@@ -11,26 +11,19 @@
     [Route("api/items")]
     public class ItemsController : BaseController
     {
-        private readonly IEventStreamService _eventStreamService;
-
-        public ItemsController(IEventStreamService eventStreamService)
-        {
-            _eventStreamService = eventStreamService;
-        }
-
         [HttpPost("addItemsToRedis")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        public Task AddItemsToRedisAsync(AddItemsCommand addItemsCommand)
+        public Task AddItemsToRedisAsync([FromServices] IEventStreamService eventStreamService, AddItemsCommand addItemsCommand)
         {
-            _eventStreamService.WriteToStream(addItemsCommand.Items);
+            eventStreamService.WriteToStream(addItemsCommand.Items);
 
             return Task.CompletedTask;
         }
 
         [HttpPost("itemsAdded")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-        public Task NotifyItemsAddedAsync([FromServices] IntegrationEventPublisherService integrationEventPublisherService)
+        public Task NotifyItemsAddedAsync([FromServices] IIntegrationEventPublisherService integrationEventPublisherService)
         {
             integrationEventPublisherService.Publish(new ItemsAddedToRedisIntegrationEvent());
 

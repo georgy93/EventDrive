@@ -65,19 +65,20 @@
 
             await connection.OpenAsync();
 
-            var idsFilter = string.Join(',', expectedResult);
-            var sql = $"SELECT ItemId FROM  dbo.Items WHERE ID IN ({idsFilter})"; // maybe it is wrong query
-
-            var command = new SqlCommand(sql, connection);
+            var command = new SqlCommand("SELECT * FROM dbo.Items", connection);
 
             var reader = await command.ExecuteReaderAsync();
-
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
                     actualResult.Add(reader["ItemId"].ToString());
                 }
+            }
+
+            foreach (var id in expectedResult)
+            {
+                actualResult.Contains(id).Should().BeTrue();
             }
 
             // Assert

@@ -7,6 +7,7 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Data.SqlClient;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using System.Threading.Tasks.Dataflow;
@@ -39,16 +40,21 @@
                 await sqlConnection.OpenAsync();
                 await BulkInsertAsync(sqlConnection, dataTable);
 
-                // test code to ensure items were inserted
+                // -------test code to ensure the items were inserted. This should be covered by integration tests. -------
                 var command = new SqlCommand("SELECT * FROM dbo.Items", sqlConnection);
                 var reader = command.ExecuteReader();
 
+                var resultIds = new List<string>();
                 while (reader.Read())
                 {
-                    var r = $"{reader["Id"]}, {reader["ItemId"]}, {reader["ItemName"]}";
+                    resultIds.Add(reader["ItemId"].ToString());
                 }
-                // end of test code
 
+                foreach (var item in itemsList)
+                {
+                    Debug.Assert(resultIds.Contains(item.Id), "An item is missing");
+                }
+                // -------end of test code--------
             }
             catch (Exception ex)
             {

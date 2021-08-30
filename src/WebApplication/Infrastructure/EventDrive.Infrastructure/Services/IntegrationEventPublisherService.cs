@@ -12,7 +12,12 @@
     using System.Net.Sockets;
     using System.Text;
 
-    public class IntegrationEventPublisherService
+    public interface IIntegrationEventPublisherService
+    {
+        void Publish(IntegrationEvent integrationEvent);
+    }
+
+    public class IntegrationEventPublisherService : IIntegrationEventPublisherService
     {
         const string BROKER_NAME = "integrationEvents";
 
