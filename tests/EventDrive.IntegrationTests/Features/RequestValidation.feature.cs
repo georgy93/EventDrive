@@ -165,16 +165,16 @@ this.ScenarioInitialize(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="When I send request with item with empty name I should receive BadRequest status " +
+        [Xunit.SkippableFactAttribute(DisplayName="When I send request with item with empty Name I should receive BadRequest status " +
             "code")]
         [Xunit.TraitAttribute("FeatureTitle", "Request Validation")]
-        [Xunit.TraitAttribute("Description", "When I send request with item with empty name I should receive BadRequest status " +
+        [Xunit.TraitAttribute("Description", "When I send request with item with empty Name I should receive BadRequest status " +
             "code")]
         public virtual void WhenISendRequestWithItemWithEmptyNameIShouldReceiveBadRequestStatusCode()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I send request with item with empty name I should receive BadRequest status " +
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I send request with item with empty Name I should receive BadRequest status " +
                     "code", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 14
 this.ScenarioInitialize(scenarioInfo);
