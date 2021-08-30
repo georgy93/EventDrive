@@ -30,7 +30,7 @@ Use 'localhost' for server and user 'sa' with the password from the docker-compo
 ### Automation Tests
 The tests are built with the Specflow testing framework. The main benefit of specflow is that the test steps are represented as human readable sentences and 
 the test results can be exported. This allows us to show the test steps and results to a business analyser or a product owner and they will understand them.
-Whatmore, they can provide the test steps and its up to the developers to only implement them.  
+Whatmore, they can potentially even provide the test steps and its up to the developers to only implement them.  
 
 In order to run the tests follow the bellow steps:  
 1. Run the application with ```Docker Compose``` option in Visual Studio
