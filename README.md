@@ -21,8 +21,8 @@ At https://localhost:5001/swagger/index.html is the swagger of the API
 ## Testing the application
 
 ### Manual Tests
-In order to manually test the application navigate to the swagger url. 
-There, each end-point will provide and example request that can be executed. 
+In order to manually test the application navigate to the swagger url.  
+There, each end-point will provide and example request that can be executed.  
 If wrong input is send the API will return 404 status code and an error object.  
 After sending some items to the API and synchronizing them with the worker service you can check the database through SQL Server management studio.  
 Use 'localhost' for server and user 'sa' with the password from the docker-compose.yml. The password is the value for the SA_PASSWORD key.  
