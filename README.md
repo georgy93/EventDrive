@@ -28,7 +28,10 @@ After sending some items to the API and synchronizing them with the worker servi
 Use 'localhost' for server and user 'sa' with the password from the docker-compose.yml. The password is the value for the SA_PASSWORD key.  
 
 ### Automation Tests
-The tests are built with the Specflow testing framework.  
+The tests are built with the Specflow testing framework. The main benefit of specflow is that the test steps are represented as human readable sentences and 
+the test results can be exported. This allows us to show the test steps and results to a business analyser or a product owner and they will understand them.
+Whatmore, they can provide the test steps and its up to the developers to only implement them.  
+
 In order to run the tests follow the bellow steps:  
 1. Run the application with ```Docker Compose``` option in Visual Studio
 2. Wait until the browser opens a new window so that we know the application is running
