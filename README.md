@@ -34,4 +34,4 @@ In order to run the tests follow the bellow steps:
 2. Wait until the browser opens a new window so that we know the application is running
 3. From Visual Studio go to Debug menu and choose ```Detach All``` so that we stop the debugger but keep the containers up and running
 4. Go to Test menu and choose ```Test Explorer```
-5. Run the test
+5. Run All tests
