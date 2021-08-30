@@ -3,7 +3,8 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using RabbitMq;
-    using Services;
+    using Services.Abstract;
+    using Services.Concrete;
     using StackExchange.Redis;
 
     public static class DependencyInjection

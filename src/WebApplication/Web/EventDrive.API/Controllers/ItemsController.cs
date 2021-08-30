@@ -3,7 +3,7 @@
     using Common;
     using DTOs.Commands;
     using DTOs.IntegrationEvents;
-    using Infrastructure.Services;
+    using Infrastructure.Services.Abstract;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using System.Threading.Tasks;

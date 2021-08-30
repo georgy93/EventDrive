@@ -1,13 +1,9 @@
-﻿namespace EventDrive.Infrastructure.Services
+﻿namespace EventDrive.Infrastructure.Services.Concrete
 {
+    using Abstract;
     using DTOs;
     using StackExchange.Redis;
     using System.Collections.Generic;
-
-    public interface IEventStreamService // move to separate file
-    {
-        void WriteToStream(IEnumerable<MyDTO> items);
-    }
 
     internal class RedisService : IEventStreamService
     {

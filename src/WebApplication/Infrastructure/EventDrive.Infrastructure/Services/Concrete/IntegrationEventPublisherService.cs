@@ -1,5 +1,6 @@
-﻿namespace EventDrive.Infrastructure.Services
+﻿namespace EventDrive.Infrastructure.Services.Concrete
 {
+    using Abstract;
     using DTOs.IntegrationEvents;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
@@ -11,11 +12,6 @@
     using System;
     using System.Net.Sockets;
     using System.Text;
-
-    public interface IIntegrationEventPublisherService
-    {
-        void Publish(IntegrationEvent integrationEvent);
-    }
 
     public class IntegrationEventPublisherService : IIntegrationEventPublisherService
     {
