@@ -4,6 +4,9 @@
  .NET 5
 <br/>
 
+## Description
+
+
 ## Getting Started
 The project is developed under Docker environment. In order to run the application we need to have Docker for Desktop installed and also a Hyper-V service enabled.
 
@@ -22,9 +25,9 @@ At https://localhost:5001/swagger/index.html is the swagger of the API
 
 ### Manual Tests
 In order to manually test the application navigate to the swagger url.  
-There, each end-point will provide and example request that can be executed.  
-If wrong input is send the API will return 404 status code and an error object.  
-After sending some items to the API and synchronizing them with the worker service you can check the database through SQL Server management studio.  
+There, each end-point will provide and example request (thanks to Swashbuckle.AspNetCore.Filters) that can be executed.  
+If wrong input is send the FluentValidation in the API will cause it to return 404 status code and an error object.  
+After sending some correct items to the API and synchronizing it with the worker service, we can check the database through SQL Server Management Studio.  
 Use 'localhost' for server and user 'sa' with the password from the docker-compose.yml. The password is the value for the SA_PASSWORD key.  
 
 ### Automation Tests
