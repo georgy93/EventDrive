@@ -11,7 +11,7 @@ Scenario: When I send request with item with empty Id I should receive BadReques
 	When I sent them to the web API
 	Then I should recieve BadRequest status code
 
-Scenario: When I send request with item with empty name I should receive BadRequest status code
-	Given  I have empty list of items containing an element with empty Name
+Scenario: When I send request with item with empty Name I should receive BadRequest status code
+	Given I have empty list of items containing an element with empty Name
 	When I sent them to the web API
 	Then I should recieve BadRequest status code
