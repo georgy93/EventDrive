@@ -2,14 +2,11 @@
 {
     using DTOs;
     using StackExchange.Redis;
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
 
-    public interface IEventStreamService
+    public interface IEventStreamService // move to separate file
     {
-        void WriteToStream(IEnumerable<MyDTO> myDTOs);
+        void WriteToStream(IEnumerable<MyDTO> items);
     }
 
     internal class RedisService : IEventStreamService
@@ -21,18 +18,18 @@
             _connectionMultiplexer = connectionMultiplexer;
         }
 
-        public void WriteToStream(IEnumerable<MyDTO> myDTOs)
+        public void WriteToStream(IEnumerable<MyDTO> items)
         {
             var redisDb = _connectionMultiplexer.GetDatabase();
 
-            myDTOs
-                .Select(c => new NameValueEntry[]
+            foreach (var item in items)
+            {
+                redisDb.StreamAdd("itemsLog", new NameValueEntry[]
                 {
-                     new NameValueEntry("id", c.Id),
-                     new NameValueEntry("name", c.Name)
-                })
-                .ToList()
-                .ForEach(entry => redisDb.StreamAdd("itemsLog", entry));
+                     new NameValueEntry("id", item.Id),
+                     new NameValueEntry("name", item.Name)
+                });
+            }
         }
     }
 }

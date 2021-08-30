@@ -56,12 +56,15 @@
         [Then(@"the items should be found in the data store")]
         public async Task ThenTheItemsShouldBeFoundInTheDataStore()
         {
+            // wait some time for the worker to insert data. Other option is to poll the database for the items
+            await Task.Delay(TimeSpan.FromSeconds(6));
+
             // Arrange
             var expectedResult = _listOfDtos.Select(x => x.Id).ToList();
             var actualResult = new List<string>();
 
             // Act
-            using var connection = new SqlConnection("Data Source=mssql;Initial Catalog=EventDriveDB;User ID=user;Password=simplePWD123!"); // move to appsettings
+            using var connection = new SqlConnection("Data Source=localhost;Initial Catalog=EventDriveDB;User ID=user;Password=simplePWD123!"); // move to appsettings
 
             await connection.OpenAsync();
 
@@ -76,13 +79,11 @@
                 }
             }
 
+            // Assert
             foreach (var id in expectedResult)
             {
                 actualResult.Contains(id).Should().BeTrue();
             }
-
-            // Assert
-            actualResult.Should().BeEquivalentTo(expectedResult);
         }
     }
 }

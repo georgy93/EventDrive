@@ -57,6 +57,8 @@
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occured");
+                // TODO: Handle exception according to requirements
+
                 return Enumerable.Empty<MyDTO>();
             }
         }

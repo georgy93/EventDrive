@@ -11,8 +11,6 @@ services:
     ports:
       - "5002:80"
     restart: on-failure
-    #environment:
-    #  - ConnectionStrings__DefaultConnection=Server=mssql;Database=EventDriveDB;User Id=user; Password=simplePWD123!;MultipleActiveResultSets=true
     depends_on:
       - mssql
     links:
@@ -29,7 +27,7 @@ services:
       dockerfile: WebApplication/Web/EventDrive.API/Dockerfile
     ports:
       - "5000:80"
-      - "5001:443"
+      - "5001:443" # How to use HTTPS: https://tomssl.com/how-to-run-asp-net-core-3-1-over-https-in-docker-using-linux-containers/
     restart: on-failure
     links:
       - rabbitMq
