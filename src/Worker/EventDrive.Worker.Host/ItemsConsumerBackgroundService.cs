@@ -33,7 +33,7 @@
             var persistenceJob = persistenceBlock.Build(new ExecutionDataflowBlockOptions
             {
                 BoundedCapacity = 10,
-                MaxDegreeOfParallelism = 1,
+                MaxDegreeOfParallelism = 1, // If the order of insertion does not matter, this block can be paralelized.
                 EnsureOrdered = true
             });
 
@@ -44,7 +44,6 @@
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // start a consumer 
             var channel = _persistentConnection.CreateChannel();
 
             channel.ExchangeDeclare(BROKER_NAME, "direct");
@@ -53,13 +52,13 @@
             channel.QueueBind(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name);
 
             var consumer = new AsyncEventingBasicConsumer(channel);
-            channel.BasicConsume(queueName, true, consumer);
 
             consumer.Received += (obj, ea) =>
             {
                 return _entryJob.SendAsync(1, stoppingToken);
             };
-            // channel.BasicConsume("items", true, consumer, false, false);
+
+            channel.BasicConsume(queueName, true, consumer);            
 
             return Task.CompletedTask;
         }
