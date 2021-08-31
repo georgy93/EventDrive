@@ -4,9 +4,11 @@
     using DTOs;
     using DTOs.IntegrationEvents;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using RabbitMq.Abstract;
     using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -17,11 +19,18 @@
         const string BROKER_NAME = "integrationEvents";
 
         private readonly IRabbitMQPersistentConnection _persistentConnection;
+        private readonly ILogger<ItemsConsumerBackgroundService> _logger;
         private readonly TransformBlock<int, IEnumerable<MyDTO>> _entryJob;
 
-        public ItemsConsumerBackgroundService(IRabbitMQPersistentConnection persistentConnection, ReadStreamBlock readStreamBlock, PersistenceBlock persistenceBlock)
+        private IModel _consumerChanel;
+
+        public ItemsConsumerBackgroundService(IRabbitMQPersistentConnection persistentConnection,
+                                              ILogger<ItemsConsumerBackgroundService> logger,
+                                              ReadStreamBlock readStreamBlock,
+                                              PersistenceBlock persistenceBlock)
         {
             _persistentConnection = persistentConnection;
+            _logger = logger;
 
             var readStreamJob = readStreamBlock.Build(new ExecutionDataflowBlockOptions
             {
@@ -44,21 +53,35 @@
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var channel = _persistentConnection.CreateChannel();
+            _consumerChanel = _persistentConnection.CreateChannel();
+            _consumerChanel.ExchangeDeclare(BROKER_NAME, "direct");
 
-            channel.ExchangeDeclare(BROKER_NAME, "direct");
+            var queueName = _consumerChanel.QueueDeclare();
+            _consumerChanel.QueueBind(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name);
 
-            var queueName = channel.QueueDeclare();
-            channel.QueueBind(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name);
+            var consumer = new AsyncEventingBasicConsumer(_consumerChanel);
 
-            var consumer = new AsyncEventingBasicConsumer(channel);
-
-            consumer.Received += (obj, ea) =>
+            consumer.Received += async (obj, ea) =>
             {
-                return _entryJob.SendAsync(1, stoppingToken);
+                try
+                {
+                    await _entryJob.SendAsync(1, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occured");
+                }
             };
 
-            channel.BasicConsume(queueName, true, consumer);            
+            _consumerChanel.BasicConsume(queueName, true, consumer);
+
+            return Task.CompletedTask;
+        }
+
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            if (_consumerChanel is { IsClosed: true })
+                _consumerChanel.Close();
 
             return Task.CompletedTask;
         }
