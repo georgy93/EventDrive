@@ -18,17 +18,17 @@
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            var apiUrl = configuration.GetSection("EventDriveAPIUrl").Value;
-
             services
               .AddRefitClient<IEventDriveAPIClient>(new RefitSettings())
-              .ConfigureHttpClient(client =>
+              .ConfigureHttpClient((sp, client) =>
               {
-                  client.BaseAddress = new Uri(apiUrl);
+                  var apuUri = sp.GetRequiredService<IConfiguration>().GetSection("EventDriveAPIUrl").Value;
+
+                  client.BaseAddress = new Uri(apuUri);
                   client.Timeout = TimeSpan.FromSeconds(10);
               });
 
-            return services;
+            return services.AddSingleton<IConfiguration>(configuration);
         }
     }
 }

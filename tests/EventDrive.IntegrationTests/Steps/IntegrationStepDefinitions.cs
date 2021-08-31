@@ -4,6 +4,7 @@
     using DTOs;
     using DTOs.Commands;
     using FluentAssertions;
+    using Microsoft.Extensions.Configuration;
     using System;
     using System.Collections.Generic;
     using System.Data.SqlClient;
@@ -14,12 +15,14 @@
     [Binding]
     public sealed class IntegrationStepDefinitions
     {
+        private readonly string _dbConnectionString;
         private readonly IEventDriveAPIClient _eventDriveAPI;
 
         private IReadOnlyCollection<MyDTO> _listOfDtos;
 
-        public IntegrationStepDefinitions(IEventDriveAPIClient eventDriveAPI)
+        public IntegrationStepDefinitions(IConfiguration configuration, IEventDriveAPIClient eventDriveAPI)
         {
+            _dbConnectionString = configuration.GetSection("EventDriveDBConnectionString").Value;
             _eventDriveAPI = eventDriveAPI;
         }
 
@@ -56,34 +59,43 @@
         [Then(@"the items should be found in the data store")]
         public async Task ThenTheItemsShouldBeFoundInTheDataStore()
         {
-            // wait some time for the worker to insert data. Other option is to poll the database for the items
+            // wait some time for the worker to insert data.
+            // Other option is to poll the database for the items or use SQLDependency
             await Task.Delay(TimeSpan.FromSeconds(6));
 
             // Arrange
             var expectedResult = _listOfDtos.Select(x => x.Id).ToList();
-            var actualResult = new List<string>();
 
             // Act
-            using var connection = new SqlConnection("Data Source=localhost;Initial Catalog=EventDriveDB;User ID=user;Password=simplePWD123!"); // move to appsettings
-
-            await connection.OpenAsync();
-
-            var command = new SqlCommand("SELECT * FROM dbo.Items", connection);
-
-            var reader = await command.ExecuteReaderAsync();
-            if (reader.HasRows)
-            {
-                while (reader.Read())
-                {
-                    actualResult.Add(reader["ItemId"].ToString());
-                }
-            }
+            var actualResult = await GetDataFromDataStoreAsync();
 
             // Assert
             foreach (var id in expectedResult)
             {
                 actualResult.Contains(id).Should().BeTrue();
             }
+        }
+
+        private async Task<IEnumerable<string>> GetDataFromDataStoreAsync()
+        {
+            using var connection = new SqlConnection(_dbConnectionString);
+
+            await connection.OpenAsync();
+
+            var command = new SqlCommand("SELECT * FROM dbo.Items", connection);
+
+            var itemIds = new List<string>();
+
+            var reader = await command.ExecuteReaderAsync();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    itemIds.Add(reader["ItemId"].ToString());
+                }
+            }
+
+            return itemIds;
         }
     }
 }
