@@ -5,7 +5,14 @@
 <br/>
 
 ## Description
-
+The first endpoint of the web API will add our items to a Redis stream.  
+The second endpoint will send a synchronization message through RabbitMQ, which will be consumed by the worker.  
+The worker flow for handling the message is built with TPL.Dataflow, which allows to split the process into multiple steps that can be paralelized individually.  
+The first step is to read the items from the Redis Stream (ReadStreamBlock.cs). A Consumer group is initialized which is configured to read all new messages for the stream.
+After the messages were added to a collection we acknowledge them so that they are not processed again.  
+The second step is the PersistenceBlock.cs. This block performs a bulk insert in the database for the items from the collection. If there is a high production rate of items
+and the order of Insert does not matter, this step can be parallelised through its ExecutionDataflowBlockOptions.MaxDegreeOfParallelism .
+Additionally, the sum of all ExecutionDataflowBlockOptions.BoundedCapacity values shows how many messages can be stored in the Dataflow queue. When the limit is reached, TPL dataflow will pause the acceptance of new messages so that it does not get overwhelmed and burn CPU or crash with Out of memory. 
 
 ## Getting Started
 The project is developed under Docker environment. In order to run the application we need to have Docker for Desktop installed and also a Hyper-V service enabled.
