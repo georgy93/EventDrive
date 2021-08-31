@@ -15,7 +15,7 @@ and the order of Insert does not matter, this step can be parallelised through i
 Additionally, the sum of all ExecutionDataflowBlockOptions.BoundedCapacity values shows how many messages can be stored in the Dataflow queue. When the limit is reached, TPL dataflow will pause the acceptance of new messages so that it does not get overwhelmed and crash the service. 
 
 ## Getting Started
-The project is developed under Docker environment. In order to run the application we need to have Docker for Desktop installed and also a Hyper-V service enabled.
+The project is developed under Docker environment. In order to run the application we need to have [Docker for Desktop](https://www.docker.com/products/docker-desktop) installed and also a Hyper-V service enabled.
 
 ### Prerequisites
 Since the API is configured to use HTTPS we must make sure we have dev certs configured.
@@ -32,13 +32,13 @@ At https://localhost:5001/swagger/index.html is the swagger of the API
 
 ### Manual Tests
 In order to manually test the application navigate to the swagger url.  
-There, each end-point will provide and example request (thanks to Swashbuckle.AspNetCore.Filters) that can be executed.  
-If wrong input is send the FluentValidation in the API will cause it to return 404 status code and an error object.  
+There, each end-point will provide and example request (thanks to [Swashbuckle.AspNetCore.Filters](https://github.com/mattfrear/Swashbuckle.AspNetCore.Filters)) that can be executed.  
+If wrong input is send the [FluentValidation](https://docs.fluentvalidation.net/en/latest/aspnet.html) in the API will cause it to return 404 status code and an error object.  
 After sending some correct items to the API and synchronizing it with the worker service, we can check the database through SQL Server Management Studio.  
 Use 'localhost' for server and user 'sa' with the password from the docker-compose.yml. The password is the value for the SA_PASSWORD key.  
 
 ### Automation Tests
-The tests are built with the Specflow testing framework. The main benefit of specflow is that the test steps are represented as human readable sentences and 
+The tests are built with the [Specflow](https://specflow.org/) testing framework. The main benefit of specflow is that the test steps are represented as human readable sentences and 
 the test results can be exported. This allows us to show the test steps and results to a business analyser or a product owner and they will understand them.
 Whatmore, they can potentially even provide the test steps and its up to the developers to only implement them.  
 
