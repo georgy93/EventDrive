@@ -60,7 +60,7 @@
         public async Task ThenTheItemsShouldBeFoundInTheDataStore()
         {
             // wait some time for the worker to insert data.
-            // Other option is to poll the database for the items or use SQLDependency
+            // Other option is to poll the database for the items or use SQLDependency for change notification
             await Task.Delay(TimeSpan.FromSeconds(6));
 
             // Arrange
