@@ -27,6 +27,7 @@
                   </PropertyGroup>
                 */
             })
+            .AddSwaggerGenNewtonsoftSupport()
             .AddSwaggerExamplesFromAssemblyOf<Startup>();
 
         private static string GetCommentsPath()
