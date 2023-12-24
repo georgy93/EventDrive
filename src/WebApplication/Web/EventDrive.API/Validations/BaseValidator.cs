@@ -9,7 +9,6 @@
     {
         protected BaseValidator()
         {
-            CascadeMode = CascadeMode.Stop;
         }
 
         public IValidationContext BeforeAspNetValidation(ActionContext actionContext, IValidationContext commonContext)
@@ -27,6 +26,18 @@
                         ? "InvalidProperty"
                         : error.ErrorCode;
                 }
+            }
+
+            return result;
+        }
+
+        public ValidationResult AfterAspNetValidation2(ActionContext actionContext, IValidationContext validationContext, ValidationResult result)
+        {
+            if (!result.IsValid)
+            {
+                result.Errors.ForEach(err => err.PropertyName = err.ErrorCode.EndsWith("Validator")
+                    ? "InvalidProperty"
+                    : err.ErrorCode);
             }
 
             return result;

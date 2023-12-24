@@ -2,6 +2,7 @@
 {
     using Behavior.Filters;
     using Behavior.Settings;
+    using FluentValidation;
     using FluentValidation.AspNetCore;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
@@ -14,10 +15,11 @@
     public static class DependencyInjection
     {
         public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration config) => services
-               .AddPresentationConfigurations(config)
-               .AddCustomWebApi()
-               .AddHttpContextAccessor()
-               .AddSwagger();
+            .AddPresentationConfigurations(config)
+            .AddCustomWebApi()
+            .AddFluentValidation()
+            .AddHttpContextAccessor()
+            .AddSwagger();
 
         private static IServiceCollection AddCustomWebApi(this IServiceCollection services)
         {
@@ -28,11 +30,7 @@
             .AddNewtonsoftJson(jsonOptions =>
             {
                 jsonOptions.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            })
-            .AddFluentValidation(mvcConfig =>
-            {
-                mvcConfig.RegisterValidatorsFromAssemblyContaining(typeof(BaseValidator<>));
-            });
+            });          
 
             services
                 .AddHealthChecks()
@@ -54,6 +52,19 @@
                              .AllowAnyHeader()
                          );
                  });
+        }
+
+        private static IServiceCollection AddFluentValidation(this IServiceCollection services)
+        {
+            services
+              .AddFluentValidationAutoValidation()
+              .AddFluentValidationClientsideAdapters()
+              .AddValidatorsFromAssembly(typeof(BaseValidator<>).Assembly);
+
+            ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
+            ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Stop;
+
+            return services;
         }
 
         private static IServiceCollection AddPresentationConfigurations(this IServiceCollection services, IConfiguration config) => services

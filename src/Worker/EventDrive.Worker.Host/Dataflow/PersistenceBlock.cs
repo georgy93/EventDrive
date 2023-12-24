@@ -1,77 +1,76 @@
-﻿namespace EventDrive.Worker.Host.Dataflow
+﻿namespace EventDrive.Worker.Host.Dataflow;
+
+using DTOs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+
+public class PersistenceBlock
 {
-    using DTOs;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Data.SqlClient;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using System.Threading.Tasks.Dataflow;
+    private readonly ILogger<PersistenceBlock> _logger;
+    private readonly IConfiguration _configuration;
 
-    public class PersistenceBlock
+    public PersistenceBlock(ILogger<PersistenceBlock> logger, IConfiguration configuration)
     {
-        private readonly ILogger<PersistenceBlock> _logger;
-        private readonly IConfiguration _configuration;
+        _logger = logger;
+        _configuration = configuration;
+    }
 
-        public PersistenceBlock(ILogger<PersistenceBlock> logger, IConfiguration configuration)
+    public ActionBlock<IEnumerable<MyDTO>> Build(ExecutionDataflowBlockOptions options) => new(x => PersistBatchToDatabaseAsync(x), options);
+
+    private async Task PersistBatchToDatabaseAsync(IEnumerable<MyDTO> items)
+    {
+        try
         {
-            _logger = logger;
-            _configuration = configuration;
+            var itemsList = items.ToList();
+            if (!itemsList.Any())
+                return;
+
+            using var sqlConnection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+
+            var dataTable = CreateDataTableFromItems(itemsList);
+
+            await sqlConnection.OpenAsync();
+            await BulkInsertAsync(sqlConnection, dataTable);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An Error Occured");
+            // TODO: Possibly retry the operation so that the data is not lost
+        }
+    }
+
+    private static DataTable CreateDataTableFromItems(IEnumerable<MyDTO> items)
+    {
+        var table = new DataTable();
+        table.Columns.Add(new DataColumn("ItemId", typeof(string)));
+        table.Columns.Add(new DataColumn("ItemName", typeof(string)));
+
+        foreach (var item in items)
+        {
+            table.Rows.Add(item.Id, item.Name);
         }
 
-        public ActionBlock<IEnumerable<MyDTO>> Build(ExecutionDataflowBlockOptions options) => new(x => PersistBatchToDatabaseAsync(x), options);
+        return table;
+    }
 
-        private async Task PersistBatchToDatabaseAsync(IEnumerable<MyDTO> items)
+    private static async Task BulkInsertAsync(SqlConnection sqlConnection, DataTable dataTable)
+    {
+        using var bulkCopy = new SqlBulkCopy(sqlConnection)
         {
-            try
-            {
-                var itemsList = items.ToList();
-                if (!itemsList.Any())
-                    return;
+            BulkCopyTimeout = 20
+        };
 
-                using var sqlConnection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        bulkCopy.DestinationTableName = "[dbo].[Items]";
+        bulkCopy.ColumnMappings.Add("ItemId", "ItemId");
+        bulkCopy.ColumnMappings.Add("ItemName", "ItemName");
 
-                var dataTable = CreateDataTableFromItems(itemsList);
-
-                await sqlConnection.OpenAsync();
-                await BulkInsertAsync(sqlConnection, dataTable);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An Error Occured");
-                // TODO: Possibly retry the operation so that the data is not lost
-            }
-        }
-
-        private static DataTable CreateDataTableFromItems(IEnumerable<MyDTO> items)
-        {
-            var table = new DataTable();
-            table.Columns.Add(new DataColumn("ItemId", typeof(string)));
-            table.Columns.Add(new DataColumn("ItemName", typeof(string)));
-
-            foreach (var item in items)
-            {
-                table.Rows.Add(item.Id, item.Name);
-            }
-
-            return table;
-        }
-
-        private static async Task BulkInsertAsync(SqlConnection sqlConnection, DataTable dataTable)
-        {
-            using var bulkCopy = new SqlBulkCopy(sqlConnection)
-            {
-                BulkCopyTimeout = 20
-            };
-
-            bulkCopy.DestinationTableName = "[dbo].[Items]";
-            bulkCopy.ColumnMappings.Add("ItemId", "ItemId");
-            bulkCopy.ColumnMappings.Add("ItemName", "ItemName");
-
-            await bulkCopy.WriteToServerAsync(dataTable);
-        }
+        await bulkCopy.WriteToServerAsync(dataTable);
     }
 }

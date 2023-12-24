@@ -1,6 +1,4 @@
-﻿namespace EventDrive.DTOs.IntegrationEvents
-{
-    public record ItemsAddedToRedisIntegrationEvent : IntegrationEvent
-    {
-    }
-}
+﻿namespace EventDrive.DTOs.IntegrationEvents;
+
+public record ItemsAddedToRedisIntegrationEvent : IntegrationEvent
+{ }

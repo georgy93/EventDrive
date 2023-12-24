@@ -1,14 +1,13 @@
-﻿namespace EventDrive.RabbitMq.Abstract
+﻿namespace EventDrive.RabbitMq.Abstract;
+
+using RabbitMQ.Client;
+using System;
+
+public interface IRabbitMQPersistentConnection : IDisposable
 {
-    using RabbitMQ.Client;
-    using System;
+    bool IsConnected { get; }
 
-    public interface IRabbitMQPersistentConnection : IDisposable
-    {
-        bool IsConnected { get; }
+    bool TryConnect();
 
-        bool TryConnect();
-
-        IModel CreateChannel();
-    }
+    IModel CreateChannel();
 }

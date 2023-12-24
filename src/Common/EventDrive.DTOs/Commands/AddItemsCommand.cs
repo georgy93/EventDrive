@@ -1,14 +1,13 @@
-﻿namespace EventDrive.DTOs.Commands
+﻿namespace EventDrive.DTOs.Commands;
+
+using System.Collections.Generic;
+using System.Linq;
+
+public record AddItemsCommand
 {
-    using System.Collections.Generic;
-    using System.Linq;
+    public AddItemsCommand() { }
 
-    public record AddItemsCommand
-    {
-        public AddItemsCommand() { }
+    public AddItemsCommand(IEnumerable<MyDTO> items) { Items = items; }
 
-        public AddItemsCommand(IEnumerable<MyDTO> items) { Items = items; }
-
-        public IEnumerable<MyDTO> Items { get; init; } = Enumerable.Empty<MyDTO>();
-    }
+    public IEnumerable<MyDTO> Items { get; init; } = Enumerable.Empty<MyDTO>();
 }

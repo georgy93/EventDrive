@@ -37,7 +37,8 @@ services:
 
   mssql:
     container_name: mssql
-    image: mcr.microsoft.com/mssql/server:2019-latest    
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    user: root
     command: /bin/bash ./entrypoint.sh    
     ports: 
       - "1433:1433"

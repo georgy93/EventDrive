@@ -14,14 +14,14 @@
         {
             services
                 .AddHealthChecks()
-                .AddRabbitMQ(sp =>
+                .AddRabbitMQ((sp, opts) =>
                 {
                     var rabbitMqSettings = sp.GetRequiredService<IOptions<RabbitMqSettings>>().Value;
                     var connectionFactory = rabbitMqSettings.ToConnectionFactory();
 
                     connectionFactory.ClientProvidedName = $"{rabbitMqSettings.ClientProvidedConnectionName}_HealthCheck";
 
-                    return connectionFactory;
+                    opts.ConnectionFactory = connectionFactory;
                 });
 
             return services
