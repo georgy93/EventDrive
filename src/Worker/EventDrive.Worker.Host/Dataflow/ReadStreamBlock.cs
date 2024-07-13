@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -60,7 +59,7 @@ public class ReadStreamBlock
             _logger.LogError(ex, "An error occured");
             // TODO: Handle exception according to requirements
 
-            return Enumerable.Empty<MyDTO>();
+            return [];
         }
     }
 }

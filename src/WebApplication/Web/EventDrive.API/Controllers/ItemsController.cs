@@ -14,11 +14,9 @@
         [HttpPost("addItemsToRedis")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        public Task AddItemsToRedisAsync([FromServices] IEventStreamService eventStreamService, AddItemsCommand addItemsCommand)
+        public async Task AddItemsToRedisAsync([FromServices] IEventStreamService eventStreamService, AddItemsCommand addItemsCommand)
         {
-            eventStreamService.WriteToStream(addItemsCommand.Items);
-
-            return Task.CompletedTask;
+            await eventStreamService.WriteToStreamAsync(addItemsCommand.Items);
         }
 
         [HttpPost("itemsAdded")]
