@@ -1,124 +1,121 @@
-﻿namespace EventDrive.RabbitMq.Concrete
+﻿namespace EventDrive.RabbitMq.Concrete;
+
+using Abstract;
+using Microsoft.Extensions.Logging;
+using Polly.Retry;
+using System.IO;
+using System.Net.Sockets;
+
+internal class DefaultRabbitMQPersistentConnection : IRabbitMQPersistentConnection
 {
-    using Abstract;
-    using Microsoft.Extensions.Logging;
-    using Polly;
-    using RabbitMQ.Client;
-    using RabbitMQ.Client.Events;
-    using RabbitMQ.Client.Exceptions;
-    using System;
-    using System.IO;
-    using System.Net.Sockets;
+    private readonly IConnectionFactory _connectionFactory;
+    private readonly ILogger<DefaultRabbitMQPersistentConnection> _logger;
+    private readonly int _retryCount;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    internal class DefaultRabbitMQPersistentConnection : IRabbitMQPersistentConnection
+    private IConnection _connection;
+    private volatile bool _disposed;
+
+    public DefaultRabbitMQPersistentConnection(IConnectionFactory connectionFactory, ILogger<DefaultRabbitMQPersistentConnection> logger, int retryCount = 3)
     {
-        private readonly IConnectionFactory _connectionFactory;
-        private readonly ILogger<DefaultRabbitMQPersistentConnection> _logger;
-        private readonly int _retryCount;
-        private readonly object lockObj = new();
+        _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _retryCount = retryCount;
+    }
 
-        private IConnection _connection;
-        private volatile bool _disposed;
+    public bool IsConnected => _connection is { IsOpen: true } && !_disposed;
 
-        public DefaultRabbitMQPersistentConnection(IConnectionFactory connectionFactory, ILogger<DefaultRabbitMQPersistentConnection> logger, int retryCount = 3)
+    public async Task<IChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    {
+        if (IsConnected)
+            return await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+
+        throw new InvalidOperationException("No RabbitMQ connections are available to perform this action");
+    }
+
+    public async Task<bool> TryConnectAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("RabbitMQ Client is trying to connect");
+
+        await _semaphore.WaitAsync(cancellationToken);
+
+        try
         {
-            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _retryCount = retryCount;
+            await CreateRetryPolicy().ExecuteAsync(async () => _connection = await _connectionFactory.CreateConnectionAsync(cancellationToken));
 
-            TryConnect();
-        }
-
-        public bool IsConnected => _connection is { IsOpen: true } && !_disposed;
-
-        public IModel CreateChannel()
-        {
             if (IsConnected)
-                return _connection.CreateModel();
-
-            throw new InvalidOperationException("No RabbitMQ connections are available to perform this action");
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            try
             {
-                _connection.Dispose();
-            }
-            catch (IOException ex)
-            {
-                _logger.LogCritical(ex, ex.Message);
+                _connection.ConnectionShutdownAsync += OnConnectionShutdownAsync;
+                _connection.CallbackExceptionAsync += OnCallbackExceptionAsync;
+                _connection.ConnectionBlockedAsync += OnConnectionBlockedAsync;
+
+                _logger.LogInformation("RabbitMQ Client acquired a persistent connection to '{ConnectionEndpointHostName}' and is subscribed to failure events", _connection.Endpoint.HostName);
+
+                return true;
             }
 
-            _disposed = true;
-        }
+            _logger.LogCritical("FATAL ERROR: RabbitMQ connections could not be created and opened");
 
-        public bool TryConnect()
+            return false;
+        }
+        finally
         {
-            _logger.LogInformation("RabbitMQ Client is trying to connect");
-
-            lock (lockObj)
-            {
-                CreateRetryPolicy().Execute(() => _connection = _connectionFactory.CreateConnection());
-
-                if (IsConnected)
-                {
-                    _connection.ConnectionShutdown += OnConnectionShutdown;
-                    _connection.CallbackException += OnCallbackException;
-                    _connection.ConnectionBlocked += OnConnectionBlocked;
-
-                    _logger.LogInformation($"RabbitMQ Client acquired a persistent connection to '{_connection.Endpoint.HostName}' and is subscribed to failure events");
-
-                    return true;
-                }
-                else
-                {
-                    _logger.LogCritical("FATAL ERROR: RabbitMQ connections could not be created and opened");
-
-                    return false;
-                }
-            }
+            _semaphore.Release();
         }
+    }
 
-        private Policy CreateRetryPolicy() => Policy
-            .Handle<SocketException>()
-            .Or<BrokerUnreachableException>()
-            .WaitAndRetry(_retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
-            {
-                _logger.LogWarning(ex, $"RabbitMQ Client could not connect after {time.TotalSeconds:n1}s ({ex.Message})");
-            });
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
 
-        private void OnConnectionBlocked(object sender, ConnectionBlockedEventArgs e)
+        try
         {
-            if (_disposed)
-                return;
-
-            _logger.LogWarning("A RabbitMQ connection is shutdown. Trying to re-connect...");
-
-            TryConnect();
+            _connection.Dispose();
         }
-
-        private void OnCallbackException(object sender, CallbackExceptionEventArgs e)
+        catch (IOException ex)
         {
-            if (_disposed)
-                return;
-
-            _logger.LogWarning("A RabbitMQ connection throw exception. Trying to re-connect...");
-
-            TryConnect();
+            _logger.LogCritical(ex, "{ExMessage}", ex.Message);
         }
 
-        private void OnConnectionShutdown(object sender, ShutdownEventArgs reason)
+        _disposed = true;
+    }
+
+    private AsyncRetryPolicy CreateRetryPolicy() => Policy
+        .Handle<SocketException>()
+        .Or<BrokerUnreachableException>()
+        .WaitAndRetryAsync(_retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
         {
-            if (_disposed)
-                return;
+            _logger.LogWarning(ex, "RabbitMQ Client could not connect after {TotalSeconds:n1}s ({ExMessage})", time.TotalSeconds, ex.Message);
+        });
 
-            _logger.LogWarning("A RabbitMQ connection is on shutdown. Trying to re-connect...");
+    private async Task OnConnectionBlockedAsync(object sender, ConnectionBlockedEventArgs e)
+    {
+        if (_disposed)
+            return;
 
-            TryConnect();
-        }
+        _logger.LogWarning("A RabbitMQ connection is shutdown. Trying to re-connect...");
+
+        await TryConnectAsync(CancellationToken.None);
+    }
+
+    private async Task OnCallbackExceptionAsync(object sender, CallbackExceptionEventArgs e)
+    {
+        if (_disposed)
+            return;
+
+        _logger.LogWarning("A RabbitMQ connection throw exception. Trying to re-connect...");
+
+        await TryConnectAsync(CancellationToken.None);
+    }
+
+    private async Task OnConnectionShutdownAsync(object sender, ShutdownEventArgs reason)
+    {
+        if (_disposed)
+            return;
+
+        _logger.LogWarning("A RabbitMQ connection is on shutdown. Trying to re-connect...");
+
+        await TryConnectAsync(CancellationToken.None);
     }
 }

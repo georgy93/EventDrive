@@ -1,10 +1,10 @@
 ﻿namespace EventDrive.API.Swagger;
 
-public class SwaggerSettings
+public record SwaggerSettings
 {
-    public string JsonRoute { get; set; }
+    public string JsonRoute { get; init; }
 
-    public string Description { get; set; }
+    public string Description { get; init; }
 
-    public string UIEndpoint { get; set; }
+    public string UIEndpoint { get; init; }
 }

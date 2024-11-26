@@ -1,6 +1,6 @@
 ﻿namespace EventDrive.API.Behavior.Settings;
 
-public class ErrorHandlingSettings
+public record ErrorHandlingSettings
 {
-    public bool ShowDetails { get; set; }
+    public bool ShowDetails { get; init; }
 }

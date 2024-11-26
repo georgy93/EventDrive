@@ -7,11 +7,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Polly;
 using RabbitMq.Abstract;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Exceptions;
-using System;
-using System.Net.Sockets;
-using System.Text;
 
 public class IntegrationEventPublisherService : IIntegrationEventPublisherService
 {
@@ -30,36 +25,39 @@ public class IntegrationEventPublisherService : IIntegrationEventPublisherServic
         _retryCount = int.Parse(configuration.GetSection("IntegrationEventsSettings:PublishRetryCount").Value);
     }
 
-    public void Publish(IntegrationEvent integrationEvent)
+    public async Task PublishAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken)
     {
         if (!_persistentConnection.IsConnected)
-            _persistentConnection.TryConnect();
+            await _persistentConnection.TryConnectAsync(cancellationToken);
 
         var policy = Policy
             .Handle<BrokerUnreachableException>()
             .Or<SocketException>()
-            .WaitAndRetry(_retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
+            .WaitAndRetryAsync(_retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
             {
                 _logger.LogWarning(ex, "Could not publish event: {IntegrationEventId} after {TotalSeconds:n1}s ({ExMessage})", integrationEvent.Id, time.TotalSeconds, ex.Message);
             });
 
-        using var channel = _persistentConnection.CreateChannel(); // or have a single channel and lock on every write
+        using var channel = await _persistentConnection.CreateChannelAsync(cancellationToken); // or have a single channel and lock on every write
 
-        channel.ExchangeDeclare(exchange: BROKER_NAME, type: "direct");
+        await channel.ExchangeDeclareAsync(exchange: BROKER_NAME, type: "direct", durable: true, autoDelete: false, cancellationToken: cancellationToken);
 
-        policy.Execute(() =>
+        await policy.ExecuteAsync(async () =>
         {
-            var properties = channel.CreateBasicProperties();
-            properties.DeliveryMode = 2; // persistent
+            var properties = new BasicProperties
+            {
+                DeliveryMode = DeliveryModes.Persistent
+            };
 
             _logger.LogDebug("Publishing event to RabbitMQ: {IntegrationEventId}", integrationEvent.Id);
 
-            channel.BasicPublish(
+            await channel.BasicPublishAsync(
                 exchange: BROKER_NAME,
                 routingKey: integrationEvent.GetType().Name,
                 mandatory: true,
                 basicProperties: properties,
-                body: GetMessageBytes(integrationEvent));
+                body: GetMessageBytes(integrationEvent),
+                cancellationToken: cancellationToken);
         });
     }
 

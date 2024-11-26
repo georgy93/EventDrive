@@ -1,7 +1,7 @@
 # EventDrive
 
 ## Framework
- .NET 5
+ .NET 9
 <br/>
 
 ## Description

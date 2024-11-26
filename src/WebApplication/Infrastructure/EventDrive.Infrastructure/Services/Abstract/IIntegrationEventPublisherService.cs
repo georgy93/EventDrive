@@ -1,9 +1,8 @@
-﻿namespace EventDrive.Infrastructure.Services.Abstract
-{
-    using DTOs.IntegrationEvents;
+﻿namespace EventDrive.Infrastructure.Services.Abstract;
 
-    public interface IIntegrationEventPublisherService
-    {
-        void Publish(IntegrationEvent integrationEvent);
-    }
+using DTOs.IntegrationEvents;
+
+public interface IIntegrationEventPublisherService
+{
+    Task PublishAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken);
 }

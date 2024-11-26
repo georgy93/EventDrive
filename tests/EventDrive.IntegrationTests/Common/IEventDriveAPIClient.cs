@@ -1,16 +1,13 @@
-﻿namespace EventDrive.IntegrationTests.Common
+﻿namespace EventDrive.IntegrationTests.Common;
+
+using DTOs.Commands;
+using Refit;
+
+public interface IEventDriveApiClient
 {
-    using DTOs.Commands;
-    using Refit;
-    using System.Threading;
-    using System.Threading.Tasks;
+    [Post("/api/items/addItemsToRedis")]
+    Task AddItemsToRedisAsync([Body] AddItemsCommand addItemsCommand, CancellationToken cancellationToken = default);
 
-    public interface IEventDriveAPIClient
-    {
-        [Post("/api/items/addItemsToRedis")]
-        Task AddItemsToRedisAsync([Body] AddItemsCommand addItemsCommand, CancellationToken cancellationToken = default);
-
-        [Post("/api/items/itemsAdded")]
-        Task NotifyItemsAddedAsync(CancellationToken cancellationToken = default);
-    }
+    [Post("/api/items/itemsAdded")]
+    Task NotifyItemsAddedAsync(CancellationToken cancellationToken = default);
 }

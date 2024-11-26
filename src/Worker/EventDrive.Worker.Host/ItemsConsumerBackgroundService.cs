@@ -1,89 +1,78 @@
-﻿namespace EventDrive.Worker.Host
+﻿namespace EventDrive.Worker.Host;
+
+using Dataflow;
+using DTOs;
+using DTOs.IntegrationEvents;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using RabbitMq.Abstract;
+using System.Threading.Tasks.Dataflow;
+
+internal class ItemsConsumerBackgroundService : BackgroundService
 {
-    using Dataflow;
-    using DTOs;
-    using DTOs.IntegrationEvents;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
-    using RabbitMq.Abstract;
-    using RabbitMQ.Client;
-    using RabbitMQ.Client.Events;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Threading.Tasks.Dataflow;
+    const string BROKER_NAME = "integrationEvents";
 
-    internal class ItemsConsumerBackgroundService : BackgroundService
+    private readonly IRabbitMQPersistentConnection _persistentConnection;
+    private readonly ILogger<ItemsConsumerBackgroundService> _logger;
+    private readonly TransformBlock<int, IEnumerable<MyDTO>> _entryJob;
+
+    private IChannel _consumerChanel;
+
+    public ItemsConsumerBackgroundService(IRabbitMQPersistentConnection persistentConnection,
+                                          ILogger<ItemsConsumerBackgroundService> logger,
+                                          ReadStreamBlock readStreamBlock,
+                                          PersistenceBlock persistenceBlock)
     {
-        const string BROKER_NAME = "integrationEvents";
+        _persistentConnection = persistentConnection;
+        _logger = logger;
 
-        private readonly IRabbitMQPersistentConnection _persistentConnection;
-        private readonly ILogger<ItemsConsumerBackgroundService> _logger;
-        private readonly TransformBlock<int, IEnumerable<MyDTO>> _entryJob;
-
-        private IModel _consumerChanel;
-
-        public ItemsConsumerBackgroundService(IRabbitMQPersistentConnection persistentConnection,
-                                              ILogger<ItemsConsumerBackgroundService> logger,
-                                              ReadStreamBlock readStreamBlock,
-                                              PersistenceBlock persistenceBlock)
+        var readStreamJob = readStreamBlock.Build(new ExecutionDataflowBlockOptions
         {
-            _persistentConnection = persistentConnection;
-            _logger = logger;
+            BoundedCapacity = 30,
+            MaxDegreeOfParallelism = 1,
+            EnsureOrdered = true
+        });
 
-            var readStreamJob = readStreamBlock.Build(new ExecutionDataflowBlockOptions
-            {
-                BoundedCapacity = 30,
-                MaxDegreeOfParallelism = 1,
-                EnsureOrdered = true
-            });
-
-            var persistenceJob = persistenceBlock.Build(new ExecutionDataflowBlockOptions
-            {
-                BoundedCapacity = 10,
-                MaxDegreeOfParallelism = 1, // If the order of insertion does not matter, this block can be paralelized.
-                EnsureOrdered = true
-            });
-
-            readStreamJob.LinkTo(persistenceJob, new DataflowLinkOptions { PropagateCompletion = true });
-
-            _entryJob = readStreamJob;
-        }
-
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        var persistenceJob = persistenceBlock.Build(new ExecutionDataflowBlockOptions
         {
-            _consumerChanel = _persistentConnection.CreateChannel();
-            _consumerChanel.ExchangeDeclare(BROKER_NAME, "direct");
+            BoundedCapacity = 10,
+            MaxDegreeOfParallelism = 1, // If the order of insertion does not matter, this block can be paralelized.
+            EnsureOrdered = true
+        });
 
-            var queueName = _consumerChanel.QueueDeclare();
-            _consumerChanel.QueueBind(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name);
+        readStreamJob.LinkTo(persistenceJob, new DataflowLinkOptions { PropagateCompletion = true });
 
-            var consumer = new AsyncEventingBasicConsumer(_consumerChanel);
+        _entryJob = readStreamJob;
+    }
 
-            consumer.Received += async (obj, ea) =>
-            {
-                try
-                {
-                    await _entryJob.SendAsync(1, stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occured");
-                }
-            };
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _consumerChanel = await _persistentConnection.CreateChannelAsync(stoppingToken);
+        await _consumerChanel.ExchangeDeclareAsync(BROKER_NAME, "direct", cancellationToken: stoppingToken);
 
-            _consumerChanel.BasicConsume(queueName, true, consumer);
+        var queueName = await _consumerChanel.QueueDeclareAsync(cancellationToken: stoppingToken);
+        await _consumerChanel.QueueBindAsync(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name, cancellationToken: stoppingToken);
 
-            return Task.CompletedTask;
-        }
+        var consumer = new AsyncEventingBasicConsumer(_consumerChanel);
 
-        public override Task StopAsync(CancellationToken cancellationToken)
+        consumer.ReceivedAsync += async (obj, ea) =>
         {
-            if (_consumerChanel is { IsClosed: true })
-                _consumerChanel.Close();
+            try
+            {
+                await _entryJob.SendAsync(1, stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occured");
+            }
+        };
 
-            return Task.CompletedTask;
-        }
+        await _consumerChanel.BasicConsumeAsync(queueName, true, consumer, cancellationToken: stoppingToken);
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        if (_consumerChanel is { IsClosed: true })
+            await _consumerChanel.CloseAsync(cancellationToken);
     }
 }

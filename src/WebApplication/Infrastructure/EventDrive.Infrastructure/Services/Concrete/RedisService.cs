@@ -3,8 +3,6 @@
 using Abstract;
 using DTOs;
 using StackExchange.Redis;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 internal class RedisService : IEventStreamService
 {
