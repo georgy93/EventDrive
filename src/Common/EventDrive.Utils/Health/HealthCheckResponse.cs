@@ -1,15 +1,14 @@
-﻿namespace EventDrive.Utils.Health
+﻿namespace EventDrive.Utils.Health;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public record HealthCheckResponse
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    public string Status { get; init; }
 
-    public record HealthCheckResponse
-    {
-        public string Status { get; init; }
+    public IEnumerable<HealthCheck> Checks { get; init; } = [];
 
-        public IEnumerable<HealthCheck> Checks { get; init; } = Enumerable.Empty<HealthCheck>();
-
-        public TimeSpan TotalDuration { get; init; }
-    }
+    public TimeSpan TotalDuration { get; init; }
 }

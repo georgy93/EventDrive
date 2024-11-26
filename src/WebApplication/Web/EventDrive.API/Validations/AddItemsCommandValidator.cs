@@ -17,7 +17,7 @@ public class AddItemsCommandValidator : BaseValidator<AddItemsCommand>
             .SetValidator(new MyDTOValidator());
     }
 
-    private class MyDTOValidator : AbstractValidator<MyDTO>
+    private class MyDTOValidator : AbstractValidator<MyDto>
     {
         public MyDTOValidator()
         {

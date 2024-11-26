@@ -14,7 +14,7 @@ public sealed class IntegrationStepDefinitions
     private readonly string _dbConnectionString;
     private readonly IEventDriveApiClient _eventDriveAPI;
 
-    private IReadOnlyCollection<MyDTO> _listOfDtos;
+    private IReadOnlyCollection<MyDto> _listOfDtos;
 
     public IntegrationStepDefinitions(IConfiguration configuration, IEventDriveApiClient eventDriveAPI)
     {
@@ -31,7 +31,7 @@ public sealed class IntegrationStepDefinitions
         {
             var guid = Guid.NewGuid().ToString();
 
-            return new MyDTO
+            return new MyDto
             {
                 Id = guid,
                 Name = guid + "lala"

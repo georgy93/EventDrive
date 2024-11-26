@@ -13,7 +13,7 @@ public class RequestValidationStepDefinitions
 {
     private readonly IEventDriveApiClient _eventDriveAPI;
 
-    private IReadOnlyCollection<MyDTO> _listOfDtos;
+    private IReadOnlyCollection<MyDto> _listOfDtos;
     private Task _apiResultTask;
 
     public RequestValidationStepDefinitions(IEventDriveApiClient eventDriveAPI)

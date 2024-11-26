@@ -1,25 +1,24 @@
-﻿namespace EventDrive.Utils.Health
+﻿namespace EventDrive.Utils.Health;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
+using System.Net.Mime;
+using Utils.Extensions;
+using Utils.Helpers;
+
+public static class HealthChecksMiddleware
 {
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-    using Microsoft.AspNetCore.Http;
-    using System.Net.Mime;
-    using Utils.Extensions;
-    using Utils.Helpers;
-
-    public static class HealthChecksMiddleware
-    {
-        public static IApplicationBuilder UseCustomHealthChecks(this IApplicationBuilder app, PathString healthCheckPath) => app
-            .UseHealthChecks(healthCheckPath, new HealthCheckOptions()
+    public static IApplicationBuilder UseCustomHealthChecks(this IApplicationBuilder app, PathString healthCheckPath) => app
+        .UseHealthChecks(healthCheckPath, new HealthCheckOptions()
+        {
+            ResponseWriter = async (context, report) =>
             {
-                ResponseWriter = async (context, report) =>
-                {
-                    context.Response.ContentType = MediaTypeNames.Application.Json;
+                context.Response.ContentType = MediaTypeNames.Application.Json;
 
-                    var hcReport = HealthCheckHelper.CreateHealthCheckResponse(report).Beautify();
+                var hcReport = HealthCheckHelper.CreateHealthCheckResponse(report).Beautify();
 
-                    await context.Response.WriteAsync(hcReport);
-                }
-            });
-    }
+                await context.Response.WriteAsync(hcReport);
+            }
+        });
 }

@@ -22,9 +22,9 @@ public class PersistenceBlock
         _configuration = configuration;
     }
 
-    public ActionBlock<IEnumerable<MyDTO>> Build(ExecutionDataflowBlockOptions options) => new(x => PersistBatchToDatabaseAsync(x), options);
+    public ActionBlock<IEnumerable<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => PersistBatchToDatabaseAsync(x), options);
 
-    private async Task PersistBatchToDatabaseAsync(IEnumerable<MyDTO> items)
+    private async Task PersistBatchToDatabaseAsync(IEnumerable<MyDto> items)
     {
         try
         {
@@ -46,7 +46,7 @@ public class PersistenceBlock
         }
     }
 
-    private static DataTable CreateDataTableFromItems(IEnumerable<MyDTO> items)
+    private static DataTable CreateDataTableFromItems(IEnumerable<MyDto> items)
     {
         var table = new DataTable();
         table.Columns.Add(new DataColumn("ItemId", typeof(string)));

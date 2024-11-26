@@ -29,20 +29,20 @@ public class ReadStreamBlock
         redisDb.StreamCreateConsumerGroup(_logName, _consumerGroupId, StreamPosition.NewMessages);
     }
 
-    public TransformBlock<int, IEnumerable<MyDTO>> Build(ExecutionDataflowBlockOptions options) => new(x => ReadStreamForItemsAsync(), options);
+    public TransformBlock<int, IEnumerable<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => ReadStreamForItemsAsync(), options);
 
-    public async Task<IEnumerable<MyDTO>> ReadStreamForItemsAsync()
+    public async Task<IEnumerable<MyDto>> ReadStreamForItemsAsync()
     {
         try
         {
             var redisDb = _connectionMultiplexer.GetDatabase();
             var streamEntries = await redisDb.StreamReadGroupAsync(_logName, _consumerGroupId, _consumerName, ">");
 
-            var result = new List<MyDTO>();
+            var result = new List<MyDto>();
 
             foreach (var entry in streamEntries)
             {
-                result.Add(new MyDTO
+                result.Add(new MyDto
                 {
                     Id = entry["id"],
                     Name = entry["name"]

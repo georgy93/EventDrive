@@ -4,5 +4,5 @@ using DTOs;
 
 public interface IEventStreamService
 {
-    Task WriteToStreamAsync(IEnumerable<MyDTO> items);
+    Task WriteToStreamAsync(IEnumerable<MyDto> items);
 }

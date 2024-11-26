@@ -14,7 +14,7 @@ public class AddItemsCommandExample : IExamplesProvider<AddItemsCommand>
         {
             var guid = Guid.NewGuid().ToString();
 
-            return new MyDTO
+            return new MyDto
             {
                 Id = guid,
                 Name = guid + "lala"

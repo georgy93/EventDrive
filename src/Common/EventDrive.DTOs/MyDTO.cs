@@ -1,9 +1,8 @@
-﻿namespace EventDrive.DTOs
-{
-    public record MyDTO
-    {
-        public string Id { get; init; }
+﻿namespace EventDrive.DTOs;
 
-        public string Name { get; init; }
-    }
+public record MyDto
+{
+    public string Id { get; init; }
+
+    public string Name { get; init; }
 }

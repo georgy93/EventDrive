@@ -13,7 +13,7 @@ internal class RedisService : IEventStreamService
         _connectionMultiplexer = connectionMultiplexer;
     }
 
-    public async Task WriteToStreamAsync(IEnumerable<MyDTO> items)
+    public async Task WriteToStreamAsync(IEnumerable<MyDto> items)
     {
         var redisDb = _connectionMultiplexer.GetDatabase();
 
