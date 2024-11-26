@@ -1,7 +1,6 @@
 ﻿namespace EventDrive.API.Common;
 
 using Newtonsoft.Json;
-using System;
 
 public record ErrorResponse
 {

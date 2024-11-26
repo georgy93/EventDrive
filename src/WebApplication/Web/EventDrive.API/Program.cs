@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using Utils.Helpers;
 
 public static class Program

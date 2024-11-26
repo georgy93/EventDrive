@@ -1,15 +1,14 @@
-﻿namespace EventDrive.API.Swagger.Examples
-{
-    using Common;
-    using Swashbuckle.AspNetCore.Filters;
+﻿namespace EventDrive.API.Swagger.Examples;
 
-    public class ErrorResponseExample : IExamplesProvider<ErrorResponse>
+using Common;
+using Swashbuckle.AspNetCore.Filters;
+
+public class ErrorResponseExample : IExamplesProvider<ErrorResponse>
+{
+    public ErrorResponse GetExamples() => new()
     {
-        public ErrorResponse GetExamples() => new()
-        {
-            ErrorCode = "InternalServerError",
-            Description = "InternalServerError",
-            Exception = null
-        };
-    }
+        ErrorCode = "InternalServerError",
+        Description = "InternalServerError",
+        Exception = null
+    };
 }

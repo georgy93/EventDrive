@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using SolidToken.SpecFlow.DependencyInjection;
-using System;
 
 public static class Bootstrapper
 {

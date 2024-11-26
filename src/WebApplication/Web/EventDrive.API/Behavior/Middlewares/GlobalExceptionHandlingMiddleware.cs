@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Settings;
-using System;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Utils.Extensions;
 
 public class GlobalExceptionHandlingMiddleware

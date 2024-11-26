@@ -4,8 +4,6 @@ using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Linq;
-using System.Threading.Tasks;
 
 public class ModelValidationFilter : IAsyncActionFilter
 {

@@ -6,8 +6,6 @@ using DTOs.IntegrationEvents;
 using Infrastructure.Services.Abstract;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
-using System.Threading.Tasks;
 
 [Route("api/items")]
 public class ItemsController : BaseController
