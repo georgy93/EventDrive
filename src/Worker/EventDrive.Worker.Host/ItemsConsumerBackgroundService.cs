@@ -74,7 +74,7 @@ internal class ItemsConsumerBackgroundService : BackgroundService
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        if (_consumerChanel is { IsClosed: true })
+        if (_consumerChanel is { IsOpen: true })
             await _consumerChanel.CloseAsync(cancellationToken);
     }
 }
