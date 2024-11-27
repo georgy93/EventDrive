@@ -47,6 +47,8 @@ internal class ItemsConsumerBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _persistentConnection.TryConnectAsync(stoppingToken);
+
         _consumerChanel = await _persistentConnection.CreateChannelAsync(stoppingToken);
         await _consumerChanel.ExchangeDeclareAsync(BROKER_NAME, "direct", cancellationToken: stoppingToken);
 

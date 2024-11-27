@@ -27,10 +27,12 @@ internal class DefaultRabbitMQPersistentConnection : IRabbitMQPersistentConnecti
 
     public async Task<IChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        if (IsConnected)
-            return await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        if (!IsConnected)
+            await TryConnectAsync(cancellationToken);
 
-        throw new InvalidOperationException("No RabbitMQ connections are available to perform this action");
+        return IsConnected
+            ? await _connection.CreateChannelAsync(cancellationToken: cancellationToken)
+            : throw new InvalidOperationException("No RabbitMQ connections are available to perform this action");
     }
 
     public async Task<bool> TryConnectAsync(CancellationToken cancellationToken)
@@ -71,7 +73,7 @@ internal class DefaultRabbitMQPersistentConnection : IRabbitMQPersistentConnecti
 
         try
         {
-            _connection.Dispose();
+            _connection?.Dispose();
         }
         catch (IOException ex)
         {

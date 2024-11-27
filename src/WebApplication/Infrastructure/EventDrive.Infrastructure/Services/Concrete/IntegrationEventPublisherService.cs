@@ -40,7 +40,7 @@ public class IntegrationEventPublisherService : IIntegrationEventPublisherServic
 
         using var channel = await _persistentConnection.CreateChannelAsync(cancellationToken); // or have a single channel and lock on every write
 
-        await channel.ExchangeDeclareAsync(exchange: BROKER_NAME, type: "direct", durable: true, autoDelete: false, cancellationToken: cancellationToken);
+        await channel.ExchangeDeclareAsync(exchange: BROKER_NAME, type: "direct", durable: false, autoDelete: false, cancellationToken: cancellationToken);
 
         await policy.ExecuteAsync(async () =>
         {

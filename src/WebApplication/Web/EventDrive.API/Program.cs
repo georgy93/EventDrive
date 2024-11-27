@@ -42,7 +42,7 @@ public static class Program
             webBuilder.UseKestrel();
             //webBuilder.UseUrls("http://*:80", "https://*:443");
             webBuilder.UseIISIntegration();
-            webBuilder.UseStartup(Assembly.GetEntryAssembly().FullName);
+            webBuilder.UseStartup(Assembly.GetEntryAssembly().GetName().Name);
         })
         .Build();
 
