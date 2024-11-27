@@ -19,11 +19,14 @@ internal class RedisService : IEventStreamService
 
         foreach (var item in items)
         {
-            await redisDb.StreamAddAsync("itemsLog",
-            [
-                 new NameValueEntry("id", item.Id),
-                 new NameValueEntry("name", item.Name)
-            ]);
+            var key = "itemsLog";
+            var nameValuePair = new NameValueEntry[]
+            {
+                new("id", item.Id),
+                new("name", item.Name)
+            };
+
+            await redisDb.StreamAddAsync(key, nameValuePair);
         }
     }
 }
