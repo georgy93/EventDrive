@@ -14,12 +14,12 @@ public class AddItemsCommandValidator : BaseValidator<AddItemsCommand>
             .WithMessage($"the {nameof(AddItemsCommand.Items)} collection must not be null or empty");
 
         RuleForEach(command => command.Items)
-            .SetValidator(new MyDTOValidator());
+            .SetValidator(new MyDtoValidator());
     }
 
-    private class MyDTOValidator : AbstractValidator<MyDto>
+    private sealed class MyDtoValidator : AbstractValidator<MyDto>
     {
-        public MyDTOValidator()
+        public MyDtoValidator()
         {
             RuleFor(e => e.Id)
                 .NotEmpty()
