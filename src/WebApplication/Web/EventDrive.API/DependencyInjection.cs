@@ -34,7 +34,7 @@ public static class DependencyInjection
 
         services
             .AddHealthChecks()
-            .AddCheck<LocalHealthCheck>("local-hc");
+            .AddCheck<LocalHealthCheck>("Local HealthCheck");
 
         return services
              .Configure<ApiBehaviorOptions>(options =>

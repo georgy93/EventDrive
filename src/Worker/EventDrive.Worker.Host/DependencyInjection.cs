@@ -9,6 +9,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) => services
         .AddRedis(configuration)
+        .AddDataBase(configuration)
         .AddRabbitMqMessaging(configuration);
 
     private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
@@ -18,15 +19,26 @@ public static class DependencyInjection
 
         services
             .AddHealthChecks()
-            .AddRedis(redisHost, "redis");
+            .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(2));
 
         var connectionOpts = new ConfigurationOptions
         {
-            AbortOnConnectFail = redisReconnectStrategy,               
+            AbortOnConnectFail = redisReconnectStrategy,
             EndPoints = { redisHost }
         };
 
         return services
             .AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect(connectionOpts));
-    }            
+    }
+
+    private static IServiceCollection AddDataBase(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        services
+           .AddHealthChecks()
+           .AddSqlServer(connectionString, name: "SQL Server HealthCheck", timeout: TimeSpan.FromSeconds(3));
+
+        return services;
+    }
 }

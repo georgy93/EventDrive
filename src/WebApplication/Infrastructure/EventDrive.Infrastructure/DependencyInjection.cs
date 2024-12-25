@@ -6,6 +6,7 @@ using RabbitMq;
 using Services.Abstract;
 using Services.Concrete;
 using StackExchange.Redis;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 public static class DependencyInjection
 {
@@ -21,7 +22,7 @@ public static class DependencyInjection
 
         services
             .AddHealthChecks()
-            .AddRedis(redisHost, "redis");
+            .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(3));
 
         var connectionOpts = new ConfigurationOptions
         {
