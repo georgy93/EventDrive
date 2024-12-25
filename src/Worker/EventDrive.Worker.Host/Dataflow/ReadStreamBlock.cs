@@ -32,9 +32,10 @@ public class ReadStreamBlock
         try
         {
             var redisDb = _connectionMultiplexer.GetDatabase();
+
             var streamEntries = await redisDb.StreamReadGroupAsync(_logName, _consumerGroupId, _consumerName, ">");
 
-            var result = new List<MyDto>();
+            var result = new List<MyDto>(streamEntries.Length);
 
             foreach (var entry in streamEntries)
             {
