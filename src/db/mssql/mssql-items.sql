@@ -28,5 +28,5 @@ GO
 CREATE USER [user] FOR LOGIN [user] WITH DEFAULT_SCHEMA=[dbo]
 GO
 
-GRANT ALL ON Items TO [user];
+GRANT CONTROL ON Items TO [user];
 GO

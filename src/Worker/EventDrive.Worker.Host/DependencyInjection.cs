@@ -33,11 +33,9 @@ public static class DependencyInjection
 
     private static IServiceCollection AddDataBase(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-
         services
            .AddHealthChecks()
-           .AddSqlServer(connectionString, name: "SQL Server HealthCheck", timeout: TimeSpan.FromSeconds(3));
+           .AddSqlServer(sp => configuration.GetConnectionString("DefaultConnection"), name: "SQL Server HealthCheck", timeout: TimeSpan.FromSeconds(3));
 
         return services;
     }

@@ -1,9 +1,7 @@
 ﻿namespace EventDrive.Worker.Host.Dataflow;
 
 using DTOs;
-using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
-using System.Collections.Generic;
 using System.Threading.Tasks.Dataflow;
 
 public class ReadStreamBlock

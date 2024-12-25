@@ -4,7 +4,6 @@ using Dataflow;
 using DTOs;
 using DTOs.IntegrationEvents;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using RabbitMq.Abstract;
 using System.Threading.Tasks.Dataflow;
 

@@ -2,13 +2,8 @@
 
 using DTOs;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using System.Threading.Tasks.Dataflow;
 
 public class PersistenceBlock

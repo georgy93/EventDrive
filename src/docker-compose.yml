@@ -44,7 +44,7 @@ services:
       - "1433:1433"
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=1234!Qwerty
+      - MSSQL_SA_PASSWORD=Str0ngP@ssw0rd123
     volumes: 
       - sqldata:/var/opt/mssql/data
       - ./db/mssql/docker-entrypoint.sh:/entrypoint.sh
