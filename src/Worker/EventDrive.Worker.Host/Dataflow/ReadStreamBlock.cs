@@ -25,9 +25,9 @@ public class ReadStreamBlock
         redisDb.StreamCreateConsumerGroup(_logName, _consumerGroupId, StreamPosition.NewMessages);
     }
 
-    public TransformBlock<int, IEnumerable<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => ReadStreamForItemsAsync(), options);
+    public TransformBlock<int, IReadOnlyCollection<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => ReadStreamForItemsAsync(), options);
 
-    public async Task<IEnumerable<MyDto>> ReadStreamForItemsAsync()
+    public async Task<IReadOnlyCollection<MyDto>> ReadStreamForItemsAsync()
     {
         try
         {

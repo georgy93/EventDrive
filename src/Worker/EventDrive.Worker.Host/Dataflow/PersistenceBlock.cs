@@ -17,28 +17,32 @@ public class PersistenceBlock
         _configuration = configuration;
     }
 
-    public ActionBlock<IEnumerable<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => PersistBatchToDatabaseAsync(x), options);
+    public ActionBlock<IReadOnlyCollection<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => TryPersistBatchToDatabaseAsync(x), options);
 
-    private async Task PersistBatchToDatabaseAsync(IEnumerable<MyDto> items)
+    private async Task TryPersistBatchToDatabaseAsync(IReadOnlyCollection<MyDto> items)
     {
         try
         {
-            var itemsList = items.ToList();
-            if (!itemsList.Any())
-                return;
-
-            using var sqlConnection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-
-            var dataTable = CreateDataTableFromItems(itemsList);
-
-            await sqlConnection.OpenAsync();
-            await BulkInsertAsync(sqlConnection, dataTable);
+            await PersistBatchToDatabaseAsync(items);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An Error Occured");
             // TODO: Possibly retry the operation so that the data is not lost
         }
+    }
+
+    private async Task PersistBatchToDatabaseAsync(IReadOnlyCollection<MyDto> items)
+    {
+        if (!items.Any())
+            return;
+
+        using var sqlConnection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+
+        var dataTable = CreateDataTableFromItems(items);
+
+        await sqlConnection.OpenAsync();
+        await BulkInsertAsync(sqlConnection, dataTable);
     }
 
     private static DataTable CreateDataTableFromItems(IEnumerable<MyDto> items)

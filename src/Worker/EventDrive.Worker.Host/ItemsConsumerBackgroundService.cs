@@ -13,7 +13,7 @@ internal class ItemsConsumerBackgroundService : BackgroundService
 
     private readonly IRabbitMQPersistentConnection _persistentConnection;
     private readonly ILogger<ItemsConsumerBackgroundService> _logger;
-    private readonly TransformBlock<int, IEnumerable<MyDto>> _entryJob;
+    private readonly TransformBlock<int, IReadOnlyCollection<MyDto>> _entryJob;
 
     private IChannel _consumerChanel;
 
