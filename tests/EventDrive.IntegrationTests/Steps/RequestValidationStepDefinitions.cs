@@ -3,10 +3,10 @@
 using Common;
 using DTOs;
 using DTOs.Commands;
-using FluentAssertions;
 using Refit;
 using System.Net;
 using TechTalk.SpecFlow;
+using Xunit;
 
 [Binding]
 public class RequestValidationStepDefinitions
@@ -62,7 +62,7 @@ public class RequestValidationStepDefinitions
         }
         catch (ApiException ex)
         {
-            ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
         }
     }
 }

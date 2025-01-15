@@ -3,10 +3,11 @@
 using Common;
 using DTOs;
 using DTOs.Commands;
-using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 using TechTalk.SpecFlow;
+using TechTalk.SpecFlow.CommonModels;
+using Xunit;
 
 [Binding]
 public sealed class IntegrationStepDefinitions
@@ -67,7 +68,7 @@ public sealed class IntegrationStepDefinitions
         // Assert
         foreach (var id in expectedResult)
         {
-            actualResult.Contains(id).Should().BeTrue();
+            Assert.Contains(id, actualResult);
         }
     }
 
