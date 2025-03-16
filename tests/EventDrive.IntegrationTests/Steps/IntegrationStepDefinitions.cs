@@ -3,10 +3,9 @@
 using Common;
 using DTOs;
 using DTOs.Commands;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using System.Data.SqlClient;
 using TechTalk.SpecFlow;
-using TechTalk.SpecFlow.CommonModels;
 using Xunit;
 
 [Binding]
@@ -27,17 +26,18 @@ public sealed class IntegrationStepDefinitions
     public void GivenIHaveAListOfItems()
     {
         _listOfDtos = Enumerable
-        .Range(0, 3)
-        .Select(x =>
-        {
-            var guid = Guid.NewGuid().ToString();
-
-            return new MyDto
+            .Range(0, 3)
+            .Select(x =>
             {
-                Id = guid,
-                Name = guid + "lala"
-            };
-        }).ToList();
+                var guid = Guid.NewGuid().ToString();
+
+                return new MyDto
+                {
+                    Id = guid,
+                    Name = guid + "lala"
+                };
+            })
+            .ToList();
     }
 
     [Given(@"I sent them to the web API")]
@@ -83,12 +83,11 @@ public sealed class IntegrationStepDefinitions
         var itemIds = new List<string>();
 
         var reader = await command.ExecuteReaderAsync();
+
         if (reader.HasRows)
         {
             while (await reader.ReadAsync())
-            {
                 itemIds.Add(reader["ItemId"].ToString());
-            }
         }
 
         return itemIds;

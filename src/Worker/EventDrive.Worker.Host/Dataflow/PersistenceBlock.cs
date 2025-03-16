@@ -1,9 +1,9 @@
 ﻿namespace EventDrive.Worker.Host.Dataflow;
 
 using DTOs;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Threading.Tasks.Dataflow;
 
 public class PersistenceBlock
