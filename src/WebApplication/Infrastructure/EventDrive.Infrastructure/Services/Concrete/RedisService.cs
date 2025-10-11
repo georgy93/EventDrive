@@ -17,6 +17,8 @@ internal class RedisService : IEventStreamService
     {
         var redisDb = _connectionMultiplexer.GetDatabase();
 
+        _connectionMultiplexer.isc
+
         foreach (var item in items)
         {
             var key = "itemsLog";

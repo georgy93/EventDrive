@@ -14,21 +14,25 @@ public static class DependencyInjection
 
     private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisHost = configuration.GetSection("RedisSettings:Host").Value;
-        var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
+        var redisHost = configuration.GetSection("RedisSettings:Host").Value;        
 
         services
             .AddHealthChecks()
             .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(2));
-
-        var connectionOpts = new ConfigurationOptions
-        {
-            AbortOnConnectFail = redisReconnectStrategy,
-            EndPoints = { redisHost }
-        };
-
+                
         return services
-            .AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect(connectionOpts));
+            .AddSingleton<IConnectionMultiplexer>(x =>
+            {
+                var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
+
+                var connectionOpts = new ConfigurationOptions
+                {
+                    AbortOnConnectFail = redisReconnectStrategy,
+                    EndPoints = { redisHost }
+                };
+
+                return ConnectionMultiplexer.Connect(connectionOpts);
+            });
     }
 
     private static IServiceCollection AddDataBase(this IServiceCollection services, IConfiguration configuration)

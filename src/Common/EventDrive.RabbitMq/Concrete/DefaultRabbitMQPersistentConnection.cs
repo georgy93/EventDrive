@@ -1,7 +1,6 @@
 ﻿namespace EventDrive.RabbitMq.Concrete;
 
 using Abstract;
-using Microsoft.Extensions.Logging;
 using Polly.Retry;
 using System.IO;
 using System.Net.Sockets;

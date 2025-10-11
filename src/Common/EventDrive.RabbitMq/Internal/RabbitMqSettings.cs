@@ -1,14 +1,14 @@
 ﻿namespace EventDrive.RabbitMq.Internal;
 
-internal class RabbitMqSettings
+internal record RabbitMqSettings
 {
-    public string ClientProvidedConnectionName { get; set; }
+    public string ClientProvidedConnectionName { get; init; }
 
-    public int CreateConnectionRetryCount { get; set; }
+    public int CreateConnectionRetryCount { get; init; }
 
-    public string HostName { get; set; }
+    public string HostName { get; init; }
 
-    public string Password { get; set; }
+    public string Password { get; init; }
 
-    public string UserName { get; set; }
+    public string UserName { get; init; }
 }

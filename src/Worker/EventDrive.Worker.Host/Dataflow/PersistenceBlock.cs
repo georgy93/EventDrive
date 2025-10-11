@@ -17,7 +17,7 @@ public class PersistenceBlock
         _configuration = configuration;
     }
 
-    public ActionBlock<IReadOnlyCollection<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => TryPersistBatchToDatabaseAsync(x), options);
+    public ActionBlock<IReadOnlyCollection<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(TryPersistBatchToDatabaseAsync, options);
 
     private async Task TryPersistBatchToDatabaseAsync(IReadOnlyCollection<MyDto> items)
     {
@@ -63,10 +63,10 @@ public class PersistenceBlock
     {
         using var bulkCopy = new SqlBulkCopy(sqlConnection)
         {
-            BulkCopyTimeout = 20
+            BulkCopyTimeout = 20,
+            DestinationTableName = "[dbo].[Items]"
         };
 
-        bulkCopy.DestinationTableName = "[dbo].[Items]";
         bulkCopy.ColumnMappings.Add("ItemId", "ItemId");
         bulkCopy.ColumnMappings.Add("ItemName", "ItemName");
 

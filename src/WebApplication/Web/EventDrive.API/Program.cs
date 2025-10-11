@@ -47,12 +47,12 @@ public static class Program
         .Build();
 
     private static void InitLogger(IConfiguration configuration) => Log.Logger = new LoggerConfiguration()
-       .Enrich.FromLogContext()
-       .Enrich.WithMachineName()
-       .Enrich.WithProperty("Environment", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
-       .WriteTo.Console()
-       .ReadFrom.Configuration(configuration)
-       .CreateLogger();
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithProperty("Environment", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+        .WriteTo.Console()
+        .ReadFrom.Configuration(configuration)
+        .CreateLogger();
 
     private static readonly EventHandler<UnobservedTaskExceptionEventArgs> OnUnobservedTaskException = (obj, eventArgs) =>
     {

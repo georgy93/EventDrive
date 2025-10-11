@@ -3,7 +3,6 @@
 using Abstract;
 using DTOs.IntegrationEvents;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Polly;
 using RabbitMq.Abstract;

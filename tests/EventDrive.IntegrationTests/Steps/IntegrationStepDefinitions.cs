@@ -79,7 +79,6 @@ public sealed class IntegrationStepDefinitions
         await connection.OpenAsync();
 
         var command = new SqlCommand("SELECT * FROM dbo.Items", connection);
-
         var itemIds = new List<string>();
 
         var reader = await command.ExecuteReaderAsync();

@@ -25,32 +25,14 @@ public class ReadStreamBlock
         redisDb.StreamCreateConsumerGroup(_logName, _consumerGroupId, StreamPosition.NewMessages);
     }
 
-    public TransformBlock<int, IReadOnlyCollection<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => ReadStreamForItemsAsync(), options);
+    public TransformBlock<int, IReadOnlyCollection<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => TryReadStreamForItemsAsync(), options);
 
-    public async Task<IReadOnlyCollection<MyDto>> ReadStreamForItemsAsync()
+    public async Task<IReadOnlyCollection<MyDto>> TryReadStreamForItemsAsync()
     {
         try
         {
-            var redisDb = _connectionMultiplexer.GetDatabase();
-
-            var streamEntries = await redisDb.StreamReadGroupAsync(_logName, _consumerGroupId, _consumerName, ">");
-
-            var result = new List<MyDto>(streamEntries.Length);
-
-            foreach (var entry in streamEntries)
-            {
-                result.Add(new MyDto
-                {
-                    Id = entry["id"],
-                    Name = entry["name"]
-                });
-
-                await redisDb.StreamAcknowledgeAsync(_logName, _consumerGroupId, entry.Id);
-            }
-
-            return result;
+            return await ReadStreamForItemsAsync();
         }
-
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occured");
@@ -58,5 +40,30 @@ public class ReadStreamBlock
 
             return [];
         }
+    }
+
+    public async Task<IReadOnlyCollection<MyDto>> ReadStreamForItemsAsync()
+    {
+        var redisDb = _connectionMultiplexer.GetDatabase();
+
+        var streamEntries = await redisDb.StreamReadGroupAsync(_logName, _consumerGroupId, _consumerName, ">");
+
+        var result = new List<MyDto>(streamEntries.Length);
+        var acknowledgeTasks = new List<Task>(streamEntries.Length);
+
+        foreach (var entry in streamEntries)
+        {
+            result.Add(new MyDto
+            {
+                Id = entry["id"],
+                Name = entry["name"]
+            });
+
+            acknowledgeTasks.Add(redisDb.StreamAcknowledgeAsync(_logName, _consumerGroupId, entry.Id));
+        }
+
+        await Task.WhenAll(acknowledgeTasks);
+
+        return result;
     }
 }

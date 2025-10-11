@@ -6,7 +6,6 @@ using RabbitMq;
 using Services.Abstract;
 using Services.Concrete;
 using StackExchange.Redis;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 public static class DependencyInjection
 {
@@ -18,20 +17,23 @@ public static class DependencyInjection
     private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
         var redisHost = configuration.GetSection("RedisSettings:Host").Value;
-        var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
 
         services
             .AddHealthChecks()
             .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(3));
 
-        var connectionOpts = new ConfigurationOptions
-        {
-            AbortOnConnectFail = redisReconnectStrategy,
-            EndPoints = { redisHost }
-        };
-
         return services
-            .AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect(connectionOpts));
+            .AddSingleton<IConnectionMultiplexer>(x =>
+            {
+                var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
+                var connectionOpts = new ConfigurationOptions
+                {
+                    AbortOnConnectFail = redisReconnectStrategy,
+                    EndPoints = { redisHost }
+                };
+
+                return ConnectionMultiplexer.Connect(connectionOpts);
+            });
     }
 
     private static IServiceCollection AddServices(this IServiceCollection services) => services
