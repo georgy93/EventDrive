@@ -12,19 +12,21 @@ public static class HttpContextExtensions
     private static readonly RouteData EmptyRouteData = new();
     private static readonly ActionDescriptor EmptyActionDescriptor = new();
 
-    public static async Task WriteResultAsync<TResult>(this HttpContext context,
-                                                       IActionResultExecutor<ObjectResult> resultExecutor,
-                                                       TResult result,
-                                                       int statusCode = StatusCodes.Status500InternalServerError)
+    extension(HttpContext context)
     {
-        var routeData = context.GetRouteData() ?? EmptyRouteData;
-        var actionContext = new ActionContext(context, routeData, EmptyActionDescriptor);
-        var objectResult = new ObjectResult(result)
+        public async Task WriteResultAsync<TResult>(IActionResultExecutor<ObjectResult> resultExecutor,
+                                                           TResult result,
+                                                           int statusCode = StatusCodes.Status500InternalServerError)
         {
-            StatusCode = statusCode,
-            DeclaredType = typeof(TResult)
-        };
+            var routeData = context.GetRouteData() ?? EmptyRouteData;
+            var actionContext = new ActionContext(context, routeData, EmptyActionDescriptor);
+            var objectResult = new ObjectResult(result)
+            {
+                StatusCode = statusCode,
+                DeclaredType = typeof(TResult)
+            };
 
-        await resultExecutor.ExecuteAsync(actionContext, objectResult);
+            await resultExecutor.ExecuteAsync(actionContext, objectResult);
+        }
     }
 }

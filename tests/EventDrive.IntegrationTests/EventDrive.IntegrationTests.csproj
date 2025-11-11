@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<UserSecretsId>41652b80-54ed-4dc4-bd84-495ba51b5d45</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.9" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.9" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="Refit" Version="8.0.0" />
 		<PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
 		<PackageReference Include="SolidToken.SpecFlow.DependencyInjection" Version="3.9.3" />

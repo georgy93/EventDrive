@@ -1,7 +1,7 @@
 ﻿namespace EventDrive.API.Swagger;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Filters;
 using System.IO;
 using System.Reflection;
