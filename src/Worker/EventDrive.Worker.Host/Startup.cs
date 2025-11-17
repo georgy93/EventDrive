@@ -1,6 +1,6 @@
 namespace EventDrive.Worker.Host;
 
-using EventDrive.Worker.Host.Dataflow;
+using Dataflow;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

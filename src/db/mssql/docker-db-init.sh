@@ -2,7 +2,7 @@
 # sleep 30
 echo "Waiting for SQL Server to start..."
 for i in {1..50}; do
-    /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null
+    /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" > /dev/null
     if [ $? -eq 0 ]; then
         echo "SQL Server is ready!"
         break
@@ -35,7 +35,7 @@ fi
 # Run initialization scripts
 echo "Running database initialization script..."
 if [ -f /db-init.sql ]; then
-    /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Str0ngP@ssw0rd123 -i /db-init.sql
+    /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Str0ngP@ssw0rd123 -C -i /db-init.sql
     if [ $? -eq 0 ]; then
         echo "Database initialization script executed successfully."
     else
@@ -55,7 +55,7 @@ wait
 # #run the setup script to create the DB and the schema in the DB
 # for i in {1..50};
 # do
-	# /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Str0ngP@ssw0rd123 -d master -i db-init.sql
+	# /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Str0ngP@ssw0rd123 -C -d master -i db-init.sql
 	# if [ $? -eq 0 ]
     # then
         # echo "setup.sql completed"

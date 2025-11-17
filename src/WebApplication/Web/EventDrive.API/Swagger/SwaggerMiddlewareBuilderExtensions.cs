@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.OpenApi;
 
 public static class SwaggerMiddlewareBuilderExtensions
 {
@@ -14,6 +15,7 @@ public static class SwaggerMiddlewareBuilderExtensions
             .UseSwagger(opt =>
             {
                 opt.RouteTemplate = swaggerSettings.JsonRoute;
+                opt.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
             })
             .UseSwaggerUI(opt =>
             {
