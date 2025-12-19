@@ -1,9 +1,9 @@
 ﻿namespace EventDrive.API;
 
 using Behavior.Filters;
+using Behavior.Middlewares;
 using Behavior.Settings;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,14 +23,15 @@ public static class DependencyInjection
 
     private static IServiceCollection AddCustomWebApi(this IServiceCollection services)
     {
-        services.AddControllers(opts =>
-        {
-            opts.Filters.Add<ModelValidationFilter>();
-        })
-        .AddNewtonsoftJson(jsonOptions =>
-        {
-            jsonOptions.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-        });          
+        services
+            .AddControllers()
+            .AddNewtonsoftJson(jsonOptions =>
+            {
+                jsonOptions.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
+
+        services.AddExceptionHandler<ModelValidationExceptionHandler>();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
 
         services
             .AddHealthChecks()
@@ -57,9 +58,7 @@ public static class DependencyInjection
     private static IServiceCollection AddFluentValidation(this IServiceCollection services)
     {
         services
-          .AddFluentValidationAutoValidation()
-          .AddFluentValidationClientsideAdapters()
-          .AddValidatorsFromAssembly(typeof(BaseValidator<>).Assembly);
+          .AddValidatorsFromAssembly(typeof(BaseValidator<>).Assembly, includeInternalTypes: true);
 
         ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
         ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Stop;

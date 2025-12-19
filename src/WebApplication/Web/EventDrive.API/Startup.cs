@@ -1,6 +1,7 @@
 namespace EventDrive.API;
 
 using Behavior.Middlewares;
+using EventDrive.API.Behavior.Filters;
 using Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -50,10 +51,10 @@ public class Startup
            .UseRouting()
            .UseCors("AllowAll")
            .UseCustomHealthChecks("/health")
-           .UseMiddleware<GlobalExceptionHandlingMiddleware>()
+           .UseExceptionHandler(_ => { })
            .UseEndpoints(endpoints =>
            {
                endpoints.MapControllers();
            });
-    }     
+    }
 }

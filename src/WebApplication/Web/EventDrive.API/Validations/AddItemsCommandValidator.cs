@@ -11,6 +11,7 @@ public class AddItemsCommandValidator : BaseValidator<AddItemsCommand>
         RuleFor(command => command.Items)
             .NotNull()
             .NotEmpty()
+            .WithErrorCode("InvalidItems")
             .WithMessage($"the {nameof(AddItemsCommand.Items)} collection must not be null or empty");
 
         RuleForEach(command => command.Items)
