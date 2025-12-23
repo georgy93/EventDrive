@@ -1,4 +1,4 @@
-﻿namespace EventDrive.Utils.Helpers;
+﻿namespace EventDrive.Utils.Health;
 
 using Health;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
