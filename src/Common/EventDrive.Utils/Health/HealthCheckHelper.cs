@@ -1,6 +1,5 @@
 ﻿namespace EventDrive.Utils.Health;
 
-using Health;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Linq;
 
