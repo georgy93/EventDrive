@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
-using Utils.Helpers;
 
 public static class HealthChecksMiddleware
 {
