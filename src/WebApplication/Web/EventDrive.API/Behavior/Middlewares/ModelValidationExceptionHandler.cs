@@ -1,4 +1,4 @@
-﻿namespace EventDrive.API.Behavior.Filters;
+﻿namespace EventDrive.API.Behavior.Middlewares;
 
 using Common;
 using FluentValidation;
