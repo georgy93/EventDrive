@@ -4,7 +4,7 @@ using Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
-using SolidToken.SpecFlow.DependencyInjection;
+using Reqnroll.Microsoft.Extensions.DependencyInjection;
 
 public static class Bootstrapper
 {

@@ -5,7 +5,7 @@ using DTOs;
 using DTOs.Commands;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using TechTalk.SpecFlow;
+using Reqnroll;
 using Xunit;
 
 [Binding]
