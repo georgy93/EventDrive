@@ -1,7 +1,5 @@
 namespace EventDrive.API;
 
-using Behavior.Middlewares;
-using EventDrive.API.Behavior.Filters;
 using Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
