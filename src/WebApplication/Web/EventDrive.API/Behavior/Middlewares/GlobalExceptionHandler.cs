@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Settings;
 using System.Runtime.ExceptionServices;
-using System.Threading;
 
 public class GlobalExceptionHandler : IExceptionHandler
 {
@@ -40,6 +39,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         if (context.Response.HasStarted)
         {
             _logger.LogWarning($"Cannot handle error. The response has already started.");
+
             ExceptionDispatchInfo.Throw(exception);
         }
     }
