@@ -7,18 +7,22 @@ using System.Text.Json;
 
 public static class HealthChecksMiddleware
 {
-    private static JsonSerializerOptions jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = true
     };
 
-    public static IApplicationBuilder UseCustomHealthChecks(this IApplicationBuilder app, PathString healthCheckPath) => app.UseHealthChecks(healthCheckPath, new HealthCheckOptions
+    extension(IApplicationBuilder app)
     {
-        ResponseWriter = async (context, report) =>
-        {
-            var healthReport = HealthCheckHelper.CreateHealthCheckResponse(report);
+        public IApplicationBuilder UseCustomHealthChecks(PathString healthCheckPath) => app.UseHealthChecks(healthCheckPath,
+            new HealthCheckOptions
+            {
+                ResponseWriter = async (context, report) =>
+                {
+                    var healthReport = HealthCheckHelper.CreateHealthCheckResponse(report);
 
-            await context.Response.WriteAsJsonAsync(healthReport, jsonSerializerOptions, context.RequestAborted);
-        }
-    });
+                    await context.Response.WriteAsJsonAsync(healthReport, JsonSerializerOptions, context.RequestAborted);
+                }
+            });
+    }
 }
