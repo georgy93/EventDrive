@@ -1,8 +1,8 @@
 ﻿namespace EventDrive.API;
 
+using Behavior.Filters;
 using Behavior.Middlewares;
 using Behavior.Settings;
-using EventDrive.API.Behavior.Filters;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
