@@ -3,11 +3,9 @@
 using Common;
 using DTOs.Commands;
 using DTOs.IntegrationEvents;
-using FluentValidation;
 using Infrastructure.Services.Abstract;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Validations;
 
 [Route("api/items")]
 public class ItemsController : BaseController
@@ -15,10 +13,8 @@ public class ItemsController : BaseController
     [HttpPost("addItemsToRedis")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task AddItemsToRedisAsync([FromServices] IEventStreamService eventStreamService, [FromServices] AddItemsCommandValidator validations, AddItemsCommand addItemsCommand)
+    public async Task AddItemsToRedisAsync([FromServices] IEventStreamService eventStreamService, AddItemsCommand addItemsCommand)
     {
-        validations.ValidateAndThrow(addItemsCommand);
-
         await eventStreamService.WriteToStreamAsync(addItemsCommand.Items);
     }
 

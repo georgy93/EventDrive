@@ -24,11 +24,11 @@ public class AddItemsCommandValidator : BaseValidator<AddItemsCommand>
         {
             RuleFor(e => e.Id)
                 .NotEmpty()
-                .WithMessage("the list of items contains invalid ID");
+                .WithMessage("The list of items contains invalid ID");
 
             RuleFor(e => e.Name)
                 .NotEmpty()
-                .WithMessage("the list of items contains invalid name");
+                .WithMessage("The list of items contains invalid name");
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace EventDrive.API;
 
-using Behavior.Filters;
 using Behavior.Middlewares;
 using Behavior.Settings;
+using EventDrive.API.Behavior.Filters;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +24,10 @@ public static class DependencyInjection
     private static IServiceCollection AddCustomWebApi(this IServiceCollection services)
     {
         services
-            .AddControllers()
+            .AddControllers(opts =>
+            {
+                opts.Filters.Add<AutoFluentValidationFilter>();
+            })
             .AddNewtonsoftJson(jsonOptions =>
             {
                 jsonOptions.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
