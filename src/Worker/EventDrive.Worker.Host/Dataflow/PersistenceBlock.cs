@@ -23,7 +23,7 @@ public class PersistenceBlock
     {
         try
         {
-            await PersistBatchToDatabaseAsync(items);
+            await PersistBatchToDatabaseAsync(items, CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -32,7 +32,7 @@ public class PersistenceBlock
         }
     }
 
-    private async Task PersistBatchToDatabaseAsync(IReadOnlyCollection<MyDto> items)
+    private async Task PersistBatchToDatabaseAsync(IReadOnlyCollection<MyDto> items, CancellationToken cancellationToken)
     {
         if (!items.Any())
             return;
@@ -41,15 +41,20 @@ public class PersistenceBlock
 
         var dataTable = CreateDataTableFromItems(items);
 
-        await sqlConnection.OpenAsync();
-        await BulkInsertAsync(sqlConnection, dataTable);
+        await sqlConnection.OpenAsync(cancellationToken);
+        await BulkInsertAsync(sqlConnection, dataTable, cancellationToken);
     }
 
     private static DataTable CreateDataTableFromItems(IEnumerable<MyDto> items)
     {
-        var table = new DataTable();
-        table.Columns.Add(new DataColumn("ItemId", typeof(string)));
-        table.Columns.Add(new DataColumn("ItemName", typeof(string)));
+        var table = new DataTable
+        {
+            Columns =
+            {
+                new DataColumn("ItemId", typeof(string)),
+                new DataColumn("ItemName", typeof(string))
+            }
+        };
 
         foreach (var item in items)
         {
@@ -59,7 +64,7 @@ public class PersistenceBlock
         return table;
     }
 
-    private static async Task BulkInsertAsync(SqlConnection sqlConnection, DataTable dataTable)
+    private static async Task BulkInsertAsync(SqlConnection sqlConnection, DataTable dataTable, CancellationToken cancellationToken)
     {
         using var bulkCopy = new SqlBulkCopy(sqlConnection)
         {
@@ -70,6 +75,6 @@ public class PersistenceBlock
         bulkCopy.ColumnMappings.Add("ItemId", "ItemId");
         bulkCopy.ColumnMappings.Add("ItemName", "ItemName");
 
-        await bulkCopy.WriteToServerAsync(dataTable);
+        await bulkCopy.WriteToServerAsync(dataTable, cancellationToken);
     }
 }

@@ -20,12 +20,16 @@ public class ReadStreamBlock
         _consumerGroupId = "events_consumer_group-" + Guid.NewGuid();
         _consumerName = $"consumer-{_consumerGroupId}";
         _logName = "itemsLog";
-
-        var redisDb = connectionMultiplexer.GetDatabase();
-        redisDb.StreamCreateConsumerGroup(_logName, _consumerGroupId, StreamPosition.NewMessages);
     }
 
-    public TransformBlock<int, IReadOnlyCollection<MyDto>> Build(ExecutionDataflowBlockOptions options) => new(x => TryReadStreamForItemsAsync(), options);
+    public async Task<TransformBlock<int, IReadOnlyCollection<MyDto>>> BuildAsync(ExecutionDataflowBlockOptions options)
+    {
+        var redisDb = _connectionMultiplexer.GetDatabase();
+
+        await redisDb.StreamCreateConsumerGroupAsync(_logName, _consumerGroupId, StreamPosition.NewMessages);
+
+        return new(x => TryReadStreamForItemsAsync(), options);
+    }
 
     public async Task<IReadOnlyCollection<MyDto>> TryReadStreamForItemsAsync()
     {

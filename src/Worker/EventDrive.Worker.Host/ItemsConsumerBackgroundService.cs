@@ -13,8 +13,9 @@ internal class ItemsConsumerBackgroundService : BackgroundService
 
     private readonly IRabbitMQPersistentConnection _persistentConnection;
     private readonly ILogger<ItemsConsumerBackgroundService> _logger;
-    private readonly TransformBlock<int, IReadOnlyCollection<MyDto>> _entryJob;
-
+    private readonly ReadStreamBlock _readStreamBlock;
+    private readonly PersistenceBlock _persistenceBlock;
+    private TransformBlock<int, IReadOnlyCollection<MyDto>> _entryJob;
     private IChannel _consumerChanel;
 
     public ItemsConsumerBackgroundService(IRabbitMQPersistentConnection persistentConnection,
@@ -22,39 +23,17 @@ internal class ItemsConsumerBackgroundService : BackgroundService
                                           ReadStreamBlock readStreamBlock,
                                           PersistenceBlock persistenceBlock)
     {
-        _persistentConnection = persistentConnection;
         _logger = logger;
-
-        var readStreamJob = readStreamBlock.Build(new ExecutionDataflowBlockOptions
-        {
-            BoundedCapacity = 30,
-            MaxDegreeOfParallelism = 1,
-            EnsureOrdered = true
-        });
-
-        var persistenceJob = persistenceBlock.Build(new ExecutionDataflowBlockOptions
-        {
-            BoundedCapacity = 10,
-            MaxDegreeOfParallelism = 1, // If the order of insertion does not matter, this block can be paralelized.
-            EnsureOrdered = true
-        });
-
-        readStreamJob.LinkTo(persistenceJob, new DataflowLinkOptions { PropagateCompletion = true });
-
-        _entryJob = readStreamJob;
+        _readStreamBlock = readStreamBlock;
+        _persistenceBlock = persistenceBlock;
+        _persistentConnection = persistentConnection;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _persistentConnection.TryConnectAsync(stoppingToken);
+        await InitializeBlocksAsync();
 
-        _consumerChanel = await _persistentConnection.CreateChannelAsync(stoppingToken);
-        await _consumerChanel.ExchangeDeclareAsync(BROKER_NAME, "direct", cancellationToken: stoppingToken);
-
-        var queueName = await _consumerChanel.QueueDeclareAsync(cancellationToken: stoppingToken);
-        await _consumerChanel.QueueBindAsync(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name, cancellationToken: stoppingToken);
-
-        var consumer = new AsyncEventingBasicConsumer(_consumerChanel);
+        (var queueName, var consumer) = await InitializeConsumerAsync(stoppingToken);
 
         consumer.ReceivedAsync += async (obj, ea) =>
         {
@@ -75,5 +54,43 @@ internal class ItemsConsumerBackgroundService : BackgroundService
     {
         if (_consumerChanel is { IsOpen: true })
             await _consumerChanel.CloseAsync(cancellationToken);
+    }
+
+    private async Task InitializeBlocksAsync()
+    {
+        var readStreamJob = await _readStreamBlock.BuildAsync(new ExecutionDataflowBlockOptions
+        {
+            BoundedCapacity = 30,
+            MaxDegreeOfParallelism = 1,
+            EnsureOrdered = true
+        });
+
+        var persistenceJob = _persistenceBlock.Build(new ExecutionDataflowBlockOptions
+        {
+            BoundedCapacity = 10,
+            MaxDegreeOfParallelism = 1, // If the order of insertion does not matter, this block can be paralelized.
+            EnsureOrdered = true
+        });
+
+        readStreamJob.LinkTo(persistenceJob, new DataflowLinkOptions { PropagateCompletion = true });
+
+        _entryJob = readStreamJob;
+    }
+
+    private async Task<(QueueDeclareOk queueName, AsyncEventingBasicConsumer consumer)> InitializeConsumerAsync(CancellationToken stoppingToken)
+    {
+        await _persistentConnection.TryConnectAsync(stoppingToken);
+
+        _consumerChanel = await _persistentConnection.CreateChannelAsync(stoppingToken);
+
+        await _consumerChanel.ExchangeDeclareAsync(BROKER_NAME, "direct", cancellationToken: stoppingToken);
+
+        var queueName = await _consumerChanel.QueueDeclareAsync(cancellationToken: stoppingToken);
+
+        await _consumerChanel.QueueBindAsync(queueName, BROKER_NAME, typeof(ItemsAddedToRedisIntegrationEvent).Name, cancellationToken: stoppingToken);
+
+        var consumer = new AsyncEventingBasicConsumer(_consumerChanel);
+
+        return (queueName, consumer);
     }
 }

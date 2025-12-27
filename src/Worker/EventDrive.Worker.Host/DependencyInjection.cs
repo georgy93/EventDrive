@@ -14,12 +14,12 @@ public static class DependencyInjection
 
     private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisHost = configuration.GetSection("RedisSettings:Host").Value;        
+        var redisHost = configuration.GetSection("RedisSettings:Host").Value;
 
         services
             .AddHealthChecks()
             .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(2));
-                
+
         return services
             .AddSingleton<IConnectionMultiplexer>(x =>
             {

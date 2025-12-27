@@ -70,5 +70,5 @@ public static class DependencyInjection
     }
 
     private static IServiceCollection AddPresentationConfigurations(this IServiceCollection services, IConfiguration config) => services
-        .Configure<ErrorHandlingSettings>(config.GetSection(nameof(ErrorHandlingSettings)));
+        .Configure<ErrorHandlingSettings>(config.GetSection(ErrorHandlingSettings.SectionName));
 }
