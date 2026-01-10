@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31624.102
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11312.210 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F0568BBB-C747-42B2-AB19-D927E3E1C773}"
 	ProjectSection(SolutionItems) = preProject
@@ -38,6 +38,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventDrive.IntegrationTests", "..\tests\EventDrive.IntegrationTests\EventDrive.IntegrationTests.csproj", "{B70C9A75-DDDB-4A24-B88C-E78586A71232}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{6939FD81-9973-43FE-A1D9-CDBDB1A28861}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "db", "db", "{C6DE991E-DCB8-4614-BE7F-DBBDC94A1351}"
+	ProjectSection(SolutionItems) = preProject
+		db\mssql\docker-db-init.sh = db\mssql\docker-db-init.sh
+		db\mssql\docker-entrypoint.sh = db\mssql\docker-entrypoint.sh
+		db\mssql\mssql-items.sql = db\mssql\mssql-items.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,6 +101,7 @@ Global
 		{10EAC5AB-6E66-488B-A825-8A5D5D3ED394} = {1C4DFB4E-DD79-4B18-81DF-5AE31468BFE4}
 		{4A7169CE-8939-4A4A-92A3-4512F7AAB9D9} = {1C4DFB4E-DD79-4B18-81DF-5AE31468BFE4}
 		{B70C9A75-DDDB-4A24-B88C-E78586A71232} = {E98730C6-5653-4E35-9F65-C495AC90E128}
+		{C6DE991E-DCB8-4614-BE7F-DBBDC94A1351} = {F0568BBB-C747-42B2-AB19-D927E3E1C773}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {00D9515B-9922-446B-A1C9-6C9E811889FA}

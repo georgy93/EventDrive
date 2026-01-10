@@ -56,13 +56,8 @@ public class RequestValidationStepDefinitions
     [Then(@"I should recieve BadRequest status code")]
     public async Task ThenIShouldRecieveBadRequestStatusCode()
     {
-        try
-        {
-            await _apiResultTask;
-        }
-        catch (ApiException ex)
-        {
-            Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
-        }
+        var exception = await Assert.ThrowsAsync<ApiException>(async () => await _apiResultTask);
+
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
     }
 }

@@ -6,10 +6,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ReqnrollFeatureFile Remove="Features\Integration.feature" />
-	</ItemGroup>
-
-	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.1.66" />
+		<PackageReference Include="Dapper-QueryBuilder" Version="2.0.0" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />

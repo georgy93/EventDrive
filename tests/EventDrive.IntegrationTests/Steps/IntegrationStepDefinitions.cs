@@ -1,6 +1,7 @@
 ﻿namespace EventDrive.IntegrationTests.Steps;
 
 using Common;
+using DapperQueryBuilder;
 using DTOs;
 using DTOs.Commands;
 using Microsoft.Data.SqlClient;
@@ -9,8 +10,8 @@ using Reqnroll;
 using Xunit;
 
 [Binding]
-public sealed class IntegrationStepDefinitions
-{
+public class IntegrationStepDefinitions
+{    
     private readonly string _dbConnectionString;
     private readonly IEventDriveApiClient _eventDriveAPI;
 
@@ -60,35 +61,25 @@ public sealed class IntegrationStepDefinitions
         await Task.Delay(TimeSpan.FromSeconds(6));
 
         // Arrange
-        var expectedResult = _listOfDtos.Select(x => x.Id).ToList();
+        var expectedResultIds = _listOfDtos.Select(x => x.Id).ToList();
 
         // Act
-        var actualResult = await GetDataFromDataStoreAsync();
+        var actualResultIds = await GetItemsFromDataStoreAsync(expectedResultIds, CancellationToken.None);
 
         // Assert
-        foreach (var id in expectedResult)
-        {
-            Assert.Contains(id, actualResult);
-        }
+        Assert.Equivalent(expectedResultIds, actualResultIds);
     }
 
-    private async Task<IEnumerable<string>> GetDataFromDataStoreAsync()
+    private async Task<IEnumerable<string>> GetItemsFromDataStoreAsync(IEnumerable<string> ids, CancellationToken cancellationToken)
     {
-        using var connection = new SqlConnection(_dbConnectionString);
+        await using var connection = new SqlConnection(_dbConnectionString);
+        await connection.OpenAsync(cancellationToken);
 
-        await connection.OpenAsync();
+        var query = connection
+            .QueryBuilder(@$"
+                SELECT ItemId FROM dbo.Items
+                WHERE ItemId IN {ids};");
 
-        var command = new SqlCommand("SELECT * FROM dbo.Items", connection);
-        var itemIds = new List<string>();
-
-        var reader = await command.ExecuteReaderAsync();
-
-        if (reader.HasRows)
-        {
-            while (await reader.ReadAsync())
-                itemIds.Add(reader["ItemId"].ToString());
-        }
-
-        return itemIds;
+        return await query.QueryAsync<string>(commandTimeout: 10, cancellationToken: cancellationToken);;
     }
 }
