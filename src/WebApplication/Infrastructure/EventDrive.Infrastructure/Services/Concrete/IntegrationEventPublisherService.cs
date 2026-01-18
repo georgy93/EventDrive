@@ -3,9 +3,9 @@
 using Abstract;
 using DTOs.IntegrationEvents;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Polly;
 using RabbitMq.Abstract;
+using System.Text.Json;
 
 public class IntegrationEventPublisherService : IIntegrationEventPublisherService
 {
@@ -62,7 +62,7 @@ public class IntegrationEventPublisherService : IIntegrationEventPublisherServic
 
     private static ReadOnlyMemory<byte> GetMessageBytes(IntegrationEvent integrationEvent)
     {
-        var message = JsonConvert.SerializeObject(integrationEvent);
+        var message = JsonSerializer.Serialize(integrationEvent);
 
         return Encoding.UTF8.GetBytes(message);
     }

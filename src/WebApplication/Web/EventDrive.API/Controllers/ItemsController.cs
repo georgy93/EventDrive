@@ -13,9 +13,9 @@ public class ItemsController : BaseController
     [HttpPost("addItemsToRedis")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task AddItemsToRedisAsync([FromServices] IEventStreamService eventStreamService, AddItemsCommand addItemsCommand)
+    public async Task AddItemsToRedisAsync([FromServices] IEventStreamService eventStreamService, AddItemsCommand addItemsCommand, CancellationToken cancellationToken)
     {
-        await eventStreamService.WriteToStreamAsync(addItemsCommand.Items);
+        await eventStreamService.WriteToStreamAsync(addItemsCommand.Items, cancellationToken);
     }
 
     [HttpPost("itemsAdded")]

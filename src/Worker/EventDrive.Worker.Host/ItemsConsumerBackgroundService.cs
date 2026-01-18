@@ -5,21 +5,22 @@ using DTOs;
 using DTOs.IntegrationEvents;
 using Microsoft.Extensions.Hosting;
 using RabbitMq.Abstract;
+using System.Text;
 using System.Threading.Tasks.Dataflow;
 
 internal class ItemsConsumerBackgroundService : BackgroundService
 {
     const string BROKER_NAME = "integrationEvents";
 
-    private readonly IRabbitMQPersistentConnection _persistentConnection;
     private readonly ILogger<ItemsConsumerBackgroundService> _logger;
+    private readonly IRabbitMQPersistentConnection _persistentConnection;
     private readonly ReadStreamBlock _readStreamBlock;
     private readonly PersistenceBlock _persistenceBlock;
     private TransformBlock<int, IReadOnlyCollection<MyDto>> _entryJob;
     private IChannel _consumerChanel;
 
-    public ItemsConsumerBackgroundService(IRabbitMQPersistentConnection persistentConnection,
-                                          ILogger<ItemsConsumerBackgroundService> logger,
+    public ItemsConsumerBackgroundService(ILogger<ItemsConsumerBackgroundService> logger, 
+                                          IRabbitMQPersistentConnection persistentConnection,
                                           ReadStreamBlock readStreamBlock,
                                           PersistenceBlock persistenceBlock)
     {
@@ -39,6 +40,10 @@ internal class ItemsConsumerBackgroundService : BackgroundService
         {
             try
             {
+                var json = Encoding.UTF8.GetString(ea.Body.ToArray());
+
+                _logger.LogInformation("Event Received: {EventJson}", json);
+
                 await _entryJob.SendAsync(1, stoppingToken);
             }
             catch (Exception ex)

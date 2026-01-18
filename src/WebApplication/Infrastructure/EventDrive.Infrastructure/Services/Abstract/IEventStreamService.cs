@@ -4,5 +4,5 @@ using DTOs;
 
 public interface IEventStreamService
 {
-    Task WriteToStreamAsync(IEnumerable<MyDto> items);
+    Task WriteToStreamAsync(IEnumerable<MyDto> items, CancellationToken cancellationToken);
 }

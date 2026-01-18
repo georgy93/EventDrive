@@ -1,7 +1,7 @@
 ﻿namespace EventDrive.DTOs.IntegrationEvents;
 
-using Newtonsoft.Json;
 using System;
+using System.Text.Json.Serialization;
 
 public record IntegrationEvent
 {
@@ -18,9 +18,7 @@ public record IntegrationEvent
         CreationDate = createDate;
     }
 
-    [JsonProperty]
     public Guid Id { get; init; }
 
-    [JsonProperty]
     public DateTime CreationDate { get; init; }
 }
