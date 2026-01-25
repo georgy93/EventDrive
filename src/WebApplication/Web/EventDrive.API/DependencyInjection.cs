@@ -7,7 +7,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Serialization;
 using Swagger;
 using Utils.Health;
 using Validations;
@@ -27,10 +26,6 @@ public static class DependencyInjection
             .AddControllers(opts =>
             {
                 opts.Filters.Add<AutoFluentValidationFilter>();
-            })
-            .AddNewtonsoftJson(jsonOptions =>
-            {
-                jsonOptions.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
         services.AddExceptionHandler<ModelValidationExceptionHandler>();

@@ -58,7 +58,7 @@ public class IntegrationStepDefinitions
     {
         // wait some time for the worker to insert data.
         // Other option is to poll the database for the items or use SQLDependency for change notification
-        await Task.Delay(TimeSpan.FromSeconds(6));
+        await Task.Delay(TimeSpan.FromSeconds(3));
 
         // Arrange
         var expectedResultIds = _listOfDtos.Select(x => x.Id).ToList();

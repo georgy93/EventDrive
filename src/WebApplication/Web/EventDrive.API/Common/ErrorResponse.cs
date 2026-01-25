@@ -1,6 +1,6 @@
 ﻿namespace EventDrive.API.Common;
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 public record ErrorResponse
 {
@@ -8,6 +8,6 @@ public record ErrorResponse
 
     public string Description { get; init; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Exception Exception { get; init; }
 }
