@@ -15,13 +15,13 @@ public static class SwaggerMiddlewareBuilderExtensions
             .UseSwagger(opt =>
             {
                 opt.RouteTemplate = swaggerSettings.JsonRoute;
-                opt.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
+                //opt.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
             })
             .UseSwaggerUI(opt =>
             {
                 opt.SwaggerEndpoint(swaggerSettings.UIEndpoint, swaggerSettings.Description);
-                opt.ConfigObject.AdditionalItems.Add("syntaxHighlight", false); //Turns off syntax highlight which causing performance issues...
-                opt.ConfigObject.AdditionalItems.Add("theme", "agate"); //Reverts Swagger UI 2.x  theme which is simpler not much performance benefit...
+                //opt.ConfigObject.AdditionalItems.Add("syntaxHighlight", false); //Turns off syntax highlight which causing performance issues...
+                //opt.ConfigObject.AdditionalItems.Add("theme", "agate"); //Reverts Swagger UI 2.x  theme which is simpler not much performance benefit...
             });
     }
 }

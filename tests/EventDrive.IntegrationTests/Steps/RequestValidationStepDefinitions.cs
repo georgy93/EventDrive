@@ -32,7 +32,7 @@ public class RequestValidationStepDefinitions
     {
         _listOfDtos =
         [
-            new() { Id = Guid.NewGuid().ToString(), Name = string.Empty },
+            new() { Id = string.Empty, Name = "dsavdvgf" },
             new() { Id = Guid.NewGuid().ToString(), Name = "khjavgsduh" }
         ];
     }
@@ -42,7 +42,7 @@ public class RequestValidationStepDefinitions
     {
         _listOfDtos =
         [
-            new() { Id = string.Empty, Name = "dsavdvgf" },
+            new() { Id = Guid.NewGuid().ToString(), Name = string.Empty },
             new() { Id = Guid.NewGuid().ToString(), Name = "bvfdbtrb" }
         ];
     }
