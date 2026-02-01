@@ -44,13 +44,13 @@ public class IntegrationStepDefinitions
     [Given(@"I sent them to the web API")]
     public async Task GivenISentThemToTheWebAPI()
     {
-        await _eventDriveAPI.AddItemsToRedisAsync(new AddItemsCommand(_listOfDtos));
+        await _eventDriveAPI.AddItemsToRedisAsync(new AddItemsCommand(_listOfDtos), TestContext.Current.CancellationToken);
     }
 
     [When(@"a request for synchronization event is sent")]
     public async Task WhenARequestForSynchronizationEventIsSent()
     {
-        await _eventDriveAPI.NotifyItemsAddedAsync();
+        await _eventDriveAPI.NotifyItemsAddedAsync(TestContext.Current.CancellationToken);
     }
 
     [Then(@"the items should be found in the data store")]
@@ -58,13 +58,13 @@ public class IntegrationStepDefinitions
     {
         // wait some time for the worker to insert data.
         // Other option is to poll the database for the items or use SQLDependency for change notification
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Task.Delay(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
 
         // Arrange
         var expectedResultIds = _listOfDtos.Select(x => x.Id).ToList();
 
         // Act
-        var actualResultIds = await GetItemsFromDataStoreAsync(expectedResultIds, CancellationToken.None);
+        var actualResultIds = await GetItemsFromDataStoreAsync(expectedResultIds, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equivalent(expectedResultIds, actualResultIds);

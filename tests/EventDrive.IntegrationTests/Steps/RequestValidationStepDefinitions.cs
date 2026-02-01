@@ -50,7 +50,7 @@ public class RequestValidationStepDefinitions
     [When(@"I sent them to the web API")]
     public void WhenISentThemToTheWebAPI()
     {
-        _apiResultTask = _eventDriveAPI.AddItemsToRedisAsync(new AddItemsCommand(_listOfDtos));
+        _apiResultTask = _eventDriveAPI.AddItemsToRedisAsync(new AddItemsCommand(_listOfDtos), TestContext.Current.CancellationToken);
     }
 
     [Then(@"I should recieve BadRequest status code")]
