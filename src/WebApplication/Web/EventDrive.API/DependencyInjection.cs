@@ -13,57 +13,60 @@ using Validations;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration config) => services
-        .AddPresentationConfigurations(config)
-        .AddCustomWebApi()
-        .AddFluentValidation()
-        .AddHttpContextAccessor()
-        .AddSwagger();
-
-    private static IServiceCollection AddCustomWebApi(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services
-            .AddControllers(opts =>
-            {
-                opts.Filters.Add<AutoFluentValidationFilter>();
-            });
+        public IServiceCollection AddPresentation(IConfiguration config) => services
+            .AddPresentationConfigurations(config)
+            .AddCustomWebApi()
+            .AddFluentValidation()
+            .AddHttpContextAccessor()
+            .AddSwagger();
 
-        services.AddExceptionHandler<ModelValidationExceptionHandler>();
-        services.AddExceptionHandler<GlobalExceptionHandler>();
+        private IServiceCollection AddCustomWebApi()
+        {
+            services
+                .AddControllers(opts =>
+                {
+                    opts.Filters.Add<AutoFluentValidationFilter>();
+                });
 
-        services
-            .AddHealthChecks()
-            .AddCheck<LocalHealthCheck>("Local HealthCheck");
+            services.AddExceptionHandler<ModelValidationExceptionHandler>();
+            services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        return services
-             .Configure<ApiBehaviorOptions>(options =>
-             {
-                 // if we use [ApiController] it will internally use its own ModelState filter
-                 // and we will not reach our custom Validation Filter
-                 options.SuppressModelStateInvalidFilter = true;
-             })
-             .AddCors(options =>
-             {
-                 options.AddPolicy("AllowAll",
-                     builder => builder
-                         .AllowAnyOrigin()
-                         .AllowAnyMethod()
-                         .AllowAnyHeader()
-                     );
-             });
+            services
+                .AddHealthChecks()
+                .AddCheck<LocalHealthCheck>("Local HealthCheck");
+
+            return services
+                 .Configure<ApiBehaviorOptions>(options =>
+                 {
+                     // if we use [ApiController] it will internally use its own ModelState filter
+                     // and we will not reach our custom Validation Filter
+                     options.SuppressModelStateInvalidFilter = true;
+                 })
+                 .AddCors(options =>
+                 {
+                     options.AddPolicy("AllowAll",
+                         builder => builder
+                             .AllowAnyOrigin()
+                             .AllowAnyMethod()
+                             .AllowAnyHeader()
+                         );
+                 });
+        }
+
+        private IServiceCollection AddFluentValidation()
+        {
+            services
+              .AddValidatorsFromAssembly(typeof(BaseValidator<>).Assembly, includeInternalTypes: true);
+
+            ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
+            ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Stop;
+
+            return services;
+        }
+
+        private IServiceCollection AddPresentationConfigurations(IConfiguration config) => services
+            .Configure<ErrorHandlingSettings>(config.GetSection(ErrorHandlingSettings.SectionName));
     }
-
-    private static IServiceCollection AddFluentValidation(this IServiceCollection services)
-    {
-        services
-          .AddValidatorsFromAssembly(typeof(BaseValidator<>).Assembly, includeInternalTypes: true);
-
-        ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
-        ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Stop;
-
-        return services;
-    }
-
-    private static IServiceCollection AddPresentationConfigurations(this IServiceCollection services, IConfiguration config) => services
-        .Configure<ErrorHandlingSettings>(config.GetSection(ErrorHandlingSettings.SectionName));
 }

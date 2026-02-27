@@ -7,40 +7,43 @@ using StackExchange.Redis;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) => services
-        .AddRedis(configuration)
-        .AddDataBase(configuration)
-        .AddRabbitMqMessaging(configuration);
-
-    private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        var redisHost = configuration.GetSection("RedisSettings:Host").Value;
+        public IServiceCollection AddInfrastructure(IConfiguration configuration) => services
+            .AddRedis(configuration)
+            .AddDataBase(configuration)
+            .AddRabbitMqMessaging(configuration);
 
-        services
-            .AddHealthChecks()
-            .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(2));
+        private IServiceCollection AddRedis(IConfiguration configuration)
+        {
+            var redisHost = configuration.GetSection("RedisSettings:Host").Value;
 
-        return services
-            .AddSingleton<IConnectionMultiplexer>(x =>
-            {
-                var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
+            services
+                .AddHealthChecks()
+                .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(2));
 
-                var connectionOpts = new ConfigurationOptions
+            return services
+                .AddSingleton<IConnectionMultiplexer>(x =>
                 {
-                    AbortOnConnectFail = redisReconnectStrategy,
-                    EndPoints = { redisHost }
-                };
+                    var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
 
-                return ConnectionMultiplexer.Connect(connectionOpts);
-            });
-    }
+                    var connectionOpts = new ConfigurationOptions
+                    {
+                        AbortOnConnectFail = redisReconnectStrategy,
+                        EndPoints = { redisHost }
+                    };
 
-    private static IServiceCollection AddDataBase(this IServiceCollection services, IConfiguration configuration)
-    {
-        services
-           .AddHealthChecks()
-           .AddSqlServer(sp => configuration.GetConnectionString("DefaultConnection"), name: "SQL Server HealthCheck", timeout: TimeSpan.FromSeconds(3));
+                    return ConnectionMultiplexer.Connect(connectionOpts);
+                });
+        }
 
-        return services;
+        private IServiceCollection AddDataBase(IConfiguration configuration)
+        {
+            services
+               .AddHealthChecks()
+               .AddSqlServer(sp => configuration.GetConnectionString("DefaultConnection"), name: "SQL Server HealthCheck", timeout: TimeSpan.FromSeconds(3));
+
+            return services;
+        }
     }
 }

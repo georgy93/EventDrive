@@ -9,34 +9,37 @@ using StackExchange.Redis;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) => services
-        .AddRedis(configuration)
-        .AddRabbitMqMessaging(configuration)
-        .AddServices();
-
-    private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        var redisHost = configuration.GetSection("RedisSettings:Host").Value;
+        public IServiceCollection AddInfrastructure(IConfiguration configuration) => services
+            .AddRedis(configuration)
+            .AddRabbitMqMessaging(configuration)
+            .AddServices();
 
-        services
-            .AddHealthChecks()
-            .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(3));
+        private IServiceCollection AddRedis(IConfiguration configuration)
+        {
+            var redisHost = configuration.GetSection("RedisSettings:Host").Value;
 
-        return services
-            .AddSingleton<IConnectionMultiplexer>(x =>
-            {
-                var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
-                var connectionOpts = new ConfigurationOptions
+            services
+                .AddHealthChecks()
+                .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(3));
+
+            return services
+                .AddSingleton<IConnectionMultiplexer>(x =>
                 {
-                    AbortOnConnectFail = redisReconnectStrategy,
-                    EndPoints = { redisHost }
-                };
+                    var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
+                    var connectionOpts = new ConfigurationOptions
+                    {
+                        AbortOnConnectFail = redisReconnectStrategy,
+                        EndPoints = { redisHost }
+                    };
 
-                return ConnectionMultiplexer.Connect(connectionOpts);
-            });
+                    return ConnectionMultiplexer.Connect(connectionOpts);
+                });
+        }
+
+        private IServiceCollection AddServices() => services
+            .AddSingleton<IEventStreamService, RedisService>()
+            .AddSingleton<IIntegrationEventPublisherService, IntegrationEventPublisherService>();
     }
-
-    private static IServiceCollection AddServices(this IServiceCollection services) => services
-        .AddSingleton<IEventStreamService, RedisService>()
-        .AddSingleton<IIntegrationEventPublisherService, IntegrationEventPublisherService>();
 }
