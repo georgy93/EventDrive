@@ -20,8 +20,8 @@
 	  <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 	  <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
 	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
-	  <PackageReference Include="StackExchange.Redis" Version="2.11.8" />
-	  <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.4" />
+	  <PackageReference Include="StackExchange.Redis" Version="2.12.1" />
+	  <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.5" />
 	  <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
 
