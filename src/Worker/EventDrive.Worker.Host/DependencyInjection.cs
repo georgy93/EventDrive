@@ -17,6 +17,7 @@ public static class DependencyInjection
         private IServiceCollection AddRedis(IConfiguration configuration)
         {
             var redisHost = configuration.GetSection("RedisSettings:Host").Value;
+            var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
 
             services
                 .AddHealthChecks()
@@ -25,8 +26,6 @@ public static class DependencyInjection
             return services
                 .AddSingleton<IConnectionMultiplexer>(x =>
                 {
-                    var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
-
                     var connectionOpts = new ConfigurationOptions
                     {
                         AbortOnConnectFail = redisReconnectStrategy,

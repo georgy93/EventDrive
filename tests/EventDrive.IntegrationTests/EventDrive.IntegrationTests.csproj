@@ -9,12 +9,12 @@
 		<PackageReference Include="Dapper" Version="2.1.89" />
 		<PackageReference Include="Dapper-QueryBuilder" Version="2.0.0" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.12" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.12" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
-		<PackageReference Include="Refit" Version="16.3.0" />
-		<PackageReference Include="Refit.HttpClientFactory" Version="16.3.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.13" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.13" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.13" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+		<PackageReference Include="Refit" Version="16.4.0" />
+		<PackageReference Include="Refit.HttpClientFactory" Version="16.4.0" />
 		<PackageReference Include="Reqnroll" Version="3.3.4" />
 		<PackageReference Include="Reqnroll.Microsoft.Extensions.DependencyInjection" Version="3.3.4" />
 		<PackageReference Include="Reqnroll.xunit.v3" Version="3.3.4" />

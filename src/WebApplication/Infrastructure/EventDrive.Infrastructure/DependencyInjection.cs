@@ -19,15 +19,15 @@ public static class DependencyInjection
         private IServiceCollection AddRedis(IConfiguration configuration)
         {
             var redisHost = configuration.GetSection("RedisSettings:Host").Value;
+            var redisReconnectStrategy = bool.Parse(configuration.GetSection("RedisSettings:AbortOnConnectFail").Value);
 
             services
                 .AddHealthChecks()
                 .AddRedis(redisHost, "Redis HealthCheck", timeout: TimeSpan.FromSeconds(3));
 
             return services
-                .AddSingleton<IConnectionMultiplexer>(x =>
+                .AddSingleton<IConnectionMultiplexer>(sp =>
                 {
-                    var redisReconnectStrategy = bool.Parse(configuration.GetSection("redisSettings:AbortOnConnectFail").Value);
                     var connectionOpts = new ConfigurationOptions
                     {
                         AbortOnConnectFail = redisReconnectStrategy,
