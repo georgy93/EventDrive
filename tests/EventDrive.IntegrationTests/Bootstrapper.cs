@@ -18,7 +18,7 @@ public static class Bootstrapper
             .Build();
 
         services
-          .AddRefitClient<IEventDriveApiClient>(new RefitSettings())
+          .AddRefitGeneratedClient<IEventDriveApiClient>(new RefitSettings())
           .ConfigureHttpClient((sp, client) =>
           {
               var apuUri = sp.GetRequiredService<IConfiguration>().GetSection("EventDriveAPIUrl").Value;
