@@ -18,7 +18,9 @@ GO
 CREATE TABLE [dbo].[Items]
 (
 	[Id] [int] identity(1,1) NOT NULL, [ItemId] [nvarchar] (MAX) NOT NULL, [ItemName] [nvarchar] (MAX) NOT NULL,
-	CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	[StreamEntryId] [varchar] (64) NOT NULL,
+	CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED ( [ID] ASC ),
+	CONSTRAINT [UQ_Items_StreamEntryId] UNIQUE ( [StreamEntryId] )
 );
 GO
 

@@ -1,9 +1,9 @@
 ﻿namespace EventDrive.Worker.Host;
 
 using Dataflow;
-using DTOs;
 using DTOs.IntegrationEvents;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using RabbitMq.Abstract;
 using System.Text;
 using System.Threading.Tasks.Dataflow;
@@ -16,15 +16,19 @@ internal class ItemsConsumerBackgroundService : BackgroundService
     private readonly IRabbitMQPersistentConnection _persistentConnection;
     private readonly ReadStreamBlock _readStreamBlock;
     private readonly PersistenceBlock _persistenceBlock;
-    private TransformBlock<int, IReadOnlyCollection<MyDto>> _entryJob;
+    private readonly RedisStreamOptions _streamOptions;
+    private ITargetBlock<int> _entryJob;
+    private Task _pipelineCompletion;
     private IChannel _consumerChanel;
 
     public ItemsConsumerBackgroundService(ILogger<ItemsConsumerBackgroundService> logger, 
                                           IRabbitMQPersistentConnection persistentConnection,
                                           ReadStreamBlock readStreamBlock,
-                                          PersistenceBlock persistenceBlock)
+                                          PersistenceBlock persistenceBlock,
+                                          IOptions<RedisStreamOptions> streamOptions)
     {
         _logger = logger;
+        _streamOptions = streamOptions.Value;
         _readStreamBlock = readStreamBlock;
         _persistenceBlock = persistenceBlock;
         _persistentConnection = persistentConnection;
@@ -53,12 +57,54 @@ internal class ItemsConsumerBackgroundService : BackgroundService
         };
 
         await _consumerChanel.BasicConsumeAsync(queueName, true, consumer, cancellationToken: stoppingToken);
+
+        await TriggerPeriodicallyAsync(stoppingToken);
+    }
+
+    /// <summary>
+    /// Reads the stream on a timer as well, so entries left pending by a failed insert or a crashed worker are
+    /// retried (or dead-lettered) even when no new events arrive.
+    /// </summary>
+    private async Task TriggerPeriodicallyAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(_streamOptions.ClaimIdleTime);
+
+        try
+        {
+            while (await timer.WaitForNextTickAsync(stoppingToken))
+            {
+                // Post, not SendAsync: if the pipeline is busy or completing, a read is already coming.
+                _entryJob.Post(1);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutting down.
+        }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         if (_consumerChanel is { IsOpen: true })
             await _consumerChanel.CloseAsync(cancellationToken);
+
+        // Let batches already read finish persisting and get acknowledged. Anything cut off by the host's
+        // shutdown timeout stays pending in Redis and is reclaimed by the next run.
+        if (_entryJob is not null)
+        {
+            _entryJob.Complete();
+
+            try
+            {
+                await _pipelineCompletion.WaitAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Shutdown timed out before the pipeline finished; unacknowledged entries will be retried");
+            }
+        }
+
+        await base.StopAsync(cancellationToken);
     }
 
     private async Task InitializeBlocksAsync()
@@ -77,9 +123,19 @@ internal class ItemsConsumerBackgroundService : BackgroundService
             EnsureOrdered = true
         });
 
-        readStreamJob.LinkTo(persistenceJob, new DataflowLinkOptions { PropagateCompletion = true });
+        var acknowledgeJob = _readStreamBlock.BuildAcknowledgeBlock(new ExecutionDataflowBlockOptions
+        {
+            BoundedCapacity = 10,
+            MaxDegreeOfParallelism = 1
+        });
+
+        var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
+
+        readStreamJob.LinkTo(persistenceJob, linkOptions);
+        persistenceJob.LinkTo(acknowledgeJob, linkOptions);
 
         _entryJob = readStreamJob;
+        _pipelineCompletion = acknowledgeJob.Completion;
     }
 
     private async Task<(QueueDeclareOk queueName, AsyncEventingBasicConsumer consumer)> InitializeConsumerAsync(CancellationToken stoppingToken)

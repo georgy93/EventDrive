@@ -22,6 +22,8 @@ public class Startup
             .AddHealthChecks()
             .AddCheck<LocalHealthCheck>("Local HealthCheck");
 
+        services.Configure<RedisStreamOptions>(Configuration.GetSection(RedisStreamOptions.SectionName));
+
         services
             .AddHostedService<ItemsConsumerBackgroundService>()
             .AddSingleton<ReadStreamBlock>()

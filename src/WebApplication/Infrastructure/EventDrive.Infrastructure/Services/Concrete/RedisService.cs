@@ -2,12 +2,11 @@
 
 using Abstract;
 using DTOs;
+using DTOs.Streams;
 using StackExchange.Redis;
 
 internal class RedisService : IEventStreamService
 {
-    private const string StreamKey = "itemsLog";
-
     private readonly IConnectionMultiplexer _connectionMultiplexer;
 
     public RedisService(IConnectionMultiplexer connectionMultiplexer)
@@ -29,10 +28,10 @@ internal class RedisService : IEventStreamService
     {
         var nameValuePair = new NameValueEntry[]
         {
-            new("id", item.Id),
-            new("name", item.Name)
+            new(ItemsStream.Fields.Id, item.Id),
+            new(ItemsStream.Fields.Name, item.Name)
         };
 
-        await redisDb.StreamAddAsync(StreamKey, nameValuePair);
+        await redisDb.StreamAddAsync(ItemsStream.Name, nameValuePair);
     }
 }
