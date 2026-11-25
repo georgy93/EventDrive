@@ -24,6 +24,7 @@ public class AddItemsCommandValidator : BaseValidator<AddItemsCommand>
         {
             RuleFor(e => e.Id)
                 .NotEmpty()
+                .MaximumLength(450)
                 .WithMessage("The list of items contains invalid ID");
 
             RuleFor(e => e.Name)

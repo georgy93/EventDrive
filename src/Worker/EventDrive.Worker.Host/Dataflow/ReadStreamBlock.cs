@@ -22,7 +22,7 @@ public class ReadStreamBlock
         _logName = "itemsLog";
     }
 
-    public async Task<TransformBlock<int, IReadOnlyCollection<MyDto>>> BuildAsync(ExecutionDataflowBlockOptions options)
+    public async Task<TransformBlock<int, StreamBatch>> BuildAsync(ExecutionDataflowBlockOptions options)
     {
         var redisDb = _connectionMultiplexer.GetDatabase();
 
@@ -30,8 +30,10 @@ public class ReadStreamBlock
 
         return new(x => TryReadStreamForItemsAsync(), options);
     }
+    
+    public ActionBlock<StreamBatch> BuildAcknowledgeBlock(ExecutionDataflowBlockOptions options) => new(TryAcknowledgeAsync, options);
 
-    public async Task<IReadOnlyCollection<MyDto>> TryReadStreamForItemsAsync()
+    private async Task<StreamBatch> TryReadStreamForItemsAsync()
     {
         try
         {
@@ -42,32 +44,49 @@ public class ReadStreamBlock
             _logger.LogError(ex, "An error occured");
             // TODO: Handle exception according to requirements
 
-            return [];
+            return StreamBatch.Empty;
         }
     }
 
-    public async Task<IReadOnlyCollection<MyDto>> ReadStreamForItemsAsync()
+    private async Task<StreamBatch> ReadStreamForItemsAsync()
     {
         var redisDb = _connectionMultiplexer.GetDatabase();
 
         var streamEntries = await redisDb.StreamReadGroupAsync(_logName, _consumerGroupId, _consumerName, ">");
 
-        var result = new List<MyDto>(streamEntries.Length);
-        var acknowledgeTasks = new List<Task>(streamEntries.Length);
+        var items = new List<MyDto>(streamEntries.Length);
+        var entryIds = new RedisValue[streamEntries.Length];
 
-        foreach (var entry in streamEntries)
+        for (var i = 0; i < streamEntries.Length; i++)
         {
-            result.Add(new MyDto
+            var entry = streamEntries[i];
+
+            items.Add(new MyDto
             {
                 Id = entry["id"],
                 Name = entry["name"]
             });
 
-            acknowledgeTasks.Add(redisDb.StreamAcknowledgeAsync(_logName, _consumerGroupId, entry.Id));
+            entryIds[i] = entry.Id;
         }
 
-        await Task.WhenAll(acknowledgeTasks);
+        return new StreamBatch(items, entryIds);
+    }
 
-        return result;
+    private async Task TryAcknowledgeAsync(StreamBatch batch)
+    {
+        if (!batch.EntryIds.Any())
+            return;
+
+        try
+        {
+            var redisDb = _connectionMultiplexer.GetDatabase();
+
+            await redisDb.StreamAcknowledgeAsync(_logName, _consumerGroupId, batch.EntryIds);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to acknowledge {Count} entries in stream {StreamName}", batch.EntryIds.Length, _logName);
+        }
     }
 }

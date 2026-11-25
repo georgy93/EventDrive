@@ -1,7 +1,6 @@
 ﻿namespace EventDrive.Worker.Host;
 
 using Dataflow;
-using DTOs;
 using DTOs.IntegrationEvents;
 using Microsoft.Extensions.Hosting;
 using RabbitMq.Abstract;
@@ -16,7 +15,7 @@ internal class ItemsConsumerBackgroundService : BackgroundService
     private readonly IRabbitMQPersistentConnection _persistentConnection;
     private readonly ReadStreamBlock _readStreamBlock;
     private readonly PersistenceBlock _persistenceBlock;
-    private TransformBlock<int, IReadOnlyCollection<MyDto>> _entryJob;
+    private ITargetBlock<int> _entryJob;
     private IChannel _consumerChanel;
 
     public ItemsConsumerBackgroundService(ILogger<ItemsConsumerBackgroundService> logger, 
@@ -77,7 +76,16 @@ internal class ItemsConsumerBackgroundService : BackgroundService
             EnsureOrdered = true
         });
 
-        readStreamJob.LinkTo(persistenceJob, new DataflowLinkOptions { PropagateCompletion = true });
+        var acknowledgeJob = _readStreamBlock.BuildAcknowledgeBlock(new ExecutionDataflowBlockOptions
+        {
+            BoundedCapacity = 10,
+            MaxDegreeOfParallelism = 1
+        });
+
+        var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
+
+        readStreamJob.LinkTo(persistenceJob, linkOptions);
+        persistenceJob.LinkTo(acknowledgeJob, linkOptions);
 
         _entryJob = readStreamJob;
     }

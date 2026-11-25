@@ -17,8 +17,11 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Items]
 (
-	[Id] [int] identity(1,1) NOT NULL, [ItemId] [nvarchar] (MAX) NOT NULL, [ItemName] [nvarchar] (MAX) NOT NULL,
-	CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	-- ItemId is capped at 450 characters because a unique index cannot be put on nvarchar(MAX).
+	[Id] [int] identity(1,1) NOT NULL, [ItemId] [nvarchar] (450) NOT NULL, [ItemName] [nvarchar] (MAX) NOT NULL,
+	[InsertedAt] [datetime2] (3) NOT NULL CONSTRAINT [DF_Items_InsertedAt] DEFAULT SYSUTCDATETIME(),
+	CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED ( [ID] ASC ),
+	CONSTRAINT [UQ_Items_ItemId] UNIQUE ( [ItemId] )
 );
 GO
 
