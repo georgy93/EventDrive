@@ -13,8 +13,10 @@ services:
     restart: on-failure
     depends_on:
       - mssql
+      - postgres
     links:
       - mssql
+      - postgres
       - rabbitMq
       - redis
     networks: 
@@ -51,6 +53,21 @@ services:
       - ./db/mssql/docker-db-init.sh:/db-init.sh      
       - ./db/mssql/mssql-items.sql:/db-init.sql
     networks: 
+      - eventDrive-network
+
+  postgres:
+    container_name: postgres
+    image: postgres:18-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=eventdrive
+      - POSTGRES_USER=eventdrive
+      - POSTGRES_PASSWORD=simplePWD123!
+    volumes:
+      # No data volume: like mssql, the database starts empty whenever the container is recreated.
+      - ./db/postgres/postgres-items.sql:/docker-entrypoint-initdb.d/postgres-items.sql
+    networks:
       - eventDrive-network
 
   rabbitMq:

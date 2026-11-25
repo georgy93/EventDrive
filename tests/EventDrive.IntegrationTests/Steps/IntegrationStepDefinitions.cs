@@ -6,20 +6,25 @@ using DTOs;
 using DTOs.Commands;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using Npgsql;
 using Reqnroll;
 using Xunit;
 
 [Binding]
 public class IntegrationStepDefinitions
 {    
+    private readonly string _dataStoreProvider;
     private readonly string _dbConnectionString;
+    private readonly string _postgresConnectionString;
     private readonly IEventDriveApiClient _eventDriveAPI;
 
     private IReadOnlyCollection<MyDto> _listOfDtos;
 
     public IntegrationStepDefinitions(IConfiguration configuration, IEventDriveApiClient eventDriveAPI)
     {
+        _dataStoreProvider = configuration.GetSection("DataStore:Provider").Value ?? "MsSql";
         _dbConnectionString = configuration.GetSection("EventDriveDBConnectionString").Value;
+        _postgresConnectionString = configuration.GetSection("EventDrivePostgresConnectionString").Value;
         _eventDriveAPI = eventDriveAPI;
     }
 
@@ -70,7 +75,16 @@ public class IntegrationStepDefinitions
         Assert.Equivalent(expectedResultIds, actualResultIds);
     }
 
-    private async Task<IEnumerable<string>> GetItemsFromDataStoreAsync(IEnumerable<string> ids, CancellationToken cancellationToken)
+    // Reads from the same store the worker writes to: set DataStore:Provider to match the worker's Persistence:Provider.
+    private Task<IEnumerable<string>> GetItemsFromDataStoreAsync(IEnumerable<string> ids, CancellationToken cancellationToken) =>
+        _dataStoreProvider switch
+        {
+            "MsSql" => GetItemsFromMsSqlAsync(ids, cancellationToken),
+            "Postgres" => GetItemsFromPostgresAsync(ids, cancellationToken),
+            _ => throw new InvalidOperationException($"Unsupported DataStore:Provider '{_dataStoreProvider}'. Use MsSql or Postgres.")
+        };
+
+    private async Task<IEnumerable<string>> GetItemsFromMsSqlAsync(IEnumerable<string> ids, CancellationToken cancellationToken)
     {
         await using var connection = new SqlConnection(_dbConnectionString);
         await connection.OpenAsync(cancellationToken);
@@ -80,6 +94,19 @@ public class IntegrationStepDefinitions
                 SELECT ItemId FROM dbo.Items
                 WHERE ItemId IN {ids};");
 
-        return await query.QueryAsync<string>(commandTimeout: 10, cancellationToken: cancellationToken);;
+        return await query.QueryAsync<string>(commandTimeout: 10, cancellationToken: cancellationToken);
+    }
+
+    private async Task<IEnumerable<string>> GetItemsFromPostgresAsync(IEnumerable<string> ids, CancellationToken cancellationToken)
+    {
+        await using var connection = new NpgsqlConnection(_postgresConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        var query = connection
+            .QueryBuilder(@$"
+                SELECT item_id FROM items
+                WHERE item_id IN {ids};");
+
+        return await query.QueryAsync<string>(commandTimeout: 10, cancellationToken: cancellationToken);
     }
 }
